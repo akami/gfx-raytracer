@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jxb:bindings version="1.0" xmlns:jxb="http://java.sun.com/xml/ns/jaxb" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <jxb:bindings schemaLocation="scene.xsd">
+        <jxb:bindings
+                node="/xs:schema/xs:element[@name='scene']/xs:complexType/xs:sequence/xs:element[@name='lights']/xs:complexType/xs:choice">
+            <jxb:property name="lights"/>
+        </jxb:bindings>
+        <jxb:bindings
+                node="/xs:schema/xs:element[@name='scene']/xs:complexType/xs:sequence/xs:element[@name='surfaces']/xs:complexType/xs:choice">
+            <jxb:property name="surfaces"/>
+        </jxb:bindings>
+        <jxb:bindings
+                node="/xs:schema/xs:complexType[@name='surface']/xs:sequence/xs:element[@name='transform']/xs:complexType/xs:choice">
+            <jxb:property name="transform"/>
+        </jxb:bindings>
+    </jxb:bindings>
+</jxb:bindings>
