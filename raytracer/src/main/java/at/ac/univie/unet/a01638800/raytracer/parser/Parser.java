@@ -6,6 +6,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import javax.imageio.ImageIO;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -13,6 +14,8 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.sax.SAXSource;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -42,7 +45,7 @@ public class Parser {
             xmlReader = saxParserFactory.newSAXParser().getXMLReader();
 
             // setup of JAXB and unmarshaller
-            JAXBContext jaxbContext = JAXBContext.newInstance("at.ac.univie.a01638800.preplab2.scene", ObjectFactory.class.getClassLoader());
+            JAXBContext jaxbContext = JAXBContext.newInstance("at.ac.univie.unet.a01638800.raytracer.scene", ObjectFactory.class.getClassLoader());
             unmarshaller = jaxbContext.createUnmarshaller();
             marshaller = jaxbContext.createMarshaller();
         } catch (JAXBException | ParserConfigurationException | SAXException ex) {
@@ -68,6 +71,18 @@ public class Parser {
             return writer.toString();
         } catch (JAXBException ex) {
             throw new ParserException("Could not parse object!", ex);
+        }
+    }
+
+    public File parseToFile() throws ParserException {
+        try {
+            File file = new File("./output/output.png");
+            BufferedImage image = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+            ImageIO.write(image, "PNG", file);
+
+            return file;
+        } catch (Exception ex) {
+            throw new ParserException("Could not output file!", ex);
         }
     }
 }

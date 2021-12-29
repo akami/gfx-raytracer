@@ -3,9 +3,8 @@ package at.ac.univie.unet.a01638800.raytracer;
 import at.ac.univie.unet.a01638800.raytracer.parser.Parser;
 import at.ac.univie.unet.a01638800.raytracer.parser.ParserException;
 import at.ac.univie.unet.a01638800.raytracer.scene.Scene;
-import org.apache.commons.lang3.builder.MultilineRecursiveToStringStyle;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
@@ -16,6 +15,8 @@ public class Main {
         Parser parser = Parser.getInstance();
 
         Scene scene = parser.parseFile(new FileInputStream(filePath));
-        System.out.println(ToStringBuilder.reflectionToString(scene, new MultilineRecursiveToStringStyle()));
+        File file = parser.parseToFile();
+
+        System.out.println(file);
     }
 }
