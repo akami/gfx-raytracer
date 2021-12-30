@@ -74,10 +74,14 @@ public class Parser {
         }
     }
 
-    public File parseToFile() throws ParserException {
+    public File parseSceneToFile(Scene scene) throws ParserException {
         try {
-            File file = new File("./output/output.png");
-            BufferedImage image = new BufferedImage(800, 800, BufferedImage.TYPE_INT_RGB);
+            File file = new File("./output/" + scene.getOutputFile());
+
+            int width = Integer.parseInt(scene.getCamera().getResolution().getHorizontal());
+            int height = Integer.parseInt(scene.getCamera().getResolution().getVertical());
+
+            BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
             ImageIO.write(image, "PNG", file);
 
             return file;
