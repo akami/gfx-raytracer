@@ -77,7 +77,7 @@ public class Parser {
     public File parseToFile() throws ParserException {
         try {
             File file = new File("./output/output.png");
-            BufferedImage image = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+            BufferedImage image = new BufferedImage(800, 800, BufferedImage.TYPE_INT_RGB);
             ImageIO.write(image, "PNG", file);
 
             return file;
