@@ -1,9 +1,13 @@
 package at.ac.univie.unet.a01638800.raytracer;
 
+import at.ac.univie.unet.a01638800.raytracer.scene.Surface;
+
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class Scene {
     private Camera camera;
+    private Sphere[] spheres;
 
     private int sceneWidth;
     private int sceneHeight;
@@ -12,6 +16,22 @@ public class Scene {
 
     public Scene(at.ac.univie.unet.a01638800.raytracer.scene.Scene scene) {
         this.camera = new Camera(scene.getCamera());
+
+        // assuming that all surfaces are of type sphere
+        int sphereCount = scene.getSurfaces().getSurfaces().size();
+
+        Sphere[] spheres = new Sphere[sphereCount];
+        int i = 0;
+
+        for (Surface surface : scene.getSurfaces().getSurfaces()) {
+            if(surface instanceof at.ac.univie.unet.a01638800.raytracer.scene.Sphere) {
+                spheres[i] = new Sphere((at.ac.univie.unet.a01638800.raytracer.scene.Sphere) surface);
+                spheres[i].getCenter().normalize();
+                i++;
+            }
+        }
+
+        this.spheres = spheres;
 
         this.sceneWidth = Integer.parseInt(scene.getCamera().getResolution().getHorizontal());
         this.sceneHeight = Integer.parseInt(scene.getCamera().getResolution().getVertical());
@@ -30,7 +50,17 @@ public class Scene {
             for(int y = 0; y < this.sceneHeight; y ++) {
                 double[] coordinates = this.camera.getRays()[x][y].getDirection().getCoordinate().getXyzValues();
 
-                this.image.getRaster().setDataElements(x, y, mapToRgb(coordinates));
+                boolean intersectionDetected = false;
+
+                for (Sphere sphere : this.spheres) {
+                    intersectionDetected = sphere.intersectionDetected(this.camera.getRays()[x][y]);
+                }
+
+                if(intersectionDetected) {
+                    this.image.setRGB(x, y, Color.WHITE.getRGB());
+                } else {
+                    this.image.getRaster().setDataElements(x, y, mapToRgb(coordinates));
+                }
             }
         }
     }

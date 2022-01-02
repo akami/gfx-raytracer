@@ -4,7 +4,15 @@ public class Point {
     private Coordinate coordinate;
 
     public Point() {
-        // empty
+        this.coordinate = new Coordinate();
+
+        double[] xyzValues = new double[3];
+
+        xyzValues[0] = 0.;
+        xyzValues[1] = 0.;
+        xyzValues[2] = 0.;
+
+        this.coordinate.setXyzValues(xyzValues);
     }
 
     public Point(double x, double y, double z) {
@@ -47,5 +55,15 @@ public class Point {
 
     public Vector subtractPoint(Point point) {
         return new Vector(this.getX() - point.getX(), this.getY() + point.getY(), this.getZ() - point.getZ());
+    }
+
+    public void normalize() {
+        this.coordinate.getXyzValues()[0] = this.getX()/this.getLength();
+        this.coordinate.getXyzValues()[1] = this.getY()/this.getLength();
+        this.coordinate.getXyzValues()[2] = this.getZ()/this.getLength();
+    }
+
+    private double getLength() {
+        return Math.sqrt((this.getX() * this.getX() + this.getY() * this.getY() + this.getZ() * this.getZ()));
     }
 }

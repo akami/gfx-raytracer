@@ -1,0 +1,122 @@
+package at.ac.univie.unet.a01638800.raytracer;
+
+import at.ac.univie.unet.a01638800.raytracer.geometricobjects.Point;
+import at.ac.univie.unet.a01638800.raytracer.geometricobjects.Vector;
+
+public class Sphere implements Intersection {
+    private at.ac.univie.unet.a01638800.raytracer.scene.Sphere parsedSphere;
+    private Point center;
+    private double radius;
+    private double radius2;
+
+    public Sphere(Point center, double radius) {
+        this.center = center;
+        this.radius = radius;
+        this.radius2 = radius * radius;
+    }
+
+    public Sphere(at.ac.univie.unet.a01638800.raytracer.scene.Sphere sphere) {
+        this.parsedSphere = sphere;
+
+        this.center = new Point(
+                Double.parseDouble(sphere.getPosition().getX()),
+                Double.parseDouble(sphere.getPosition().getY()),
+                Double.parseDouble(sphere.getPosition().getZ())
+        );
+        this.radius = Double.parseDouble(sphere.getRadius());
+        this.radius2 = this.radius * this.radius;
+    }
+
+    public at.ac.univie.unet.a01638800.raytracer.scene.Sphere getParsedSphere() {
+        return parsedSphere;
+    }
+
+    public void setParsedSphere(at.ac.univie.unet.a01638800.raytracer.scene.Sphere parsedSphere) {
+        this.parsedSphere = parsedSphere;
+    }
+
+    public Point getCenter() {
+        return center;
+    }
+
+    public void setCenter(Point center) {
+        this.center = center;
+    }
+
+    public double getRadius() {
+        return radius;
+    }
+
+    public void setRadius(double radius) {
+        this.radius = radius;
+    }
+
+    public double getRadius2() {
+        return radius2;
+    }
+
+    public void setRadius2(double radius2) {
+        this.radius2 = radius2;
+    }
+
+    @Override
+    public boolean intersectionDetected(Ray ray) {
+        // o
+        Point rayOrigin = ray.getOrigin();
+
+        // d
+        Vector rayDirection = ray.getDirection();
+
+        // solve (dt)² + 2d * (o - C)t + (o - C)² - R² = 0 for t
+
+        // (o - C)
+        Vector rayOriginToSphereCenter = this.center.subtractPoint(rayOrigin);
+
+        // a * t² + b * t + c = 0
+
+        // a = d²
+        double a = rayDirection.dotProduct(rayDirection);
+
+        // b = 2 * d * (o - C)
+        double b = 2 * rayDirection.dotProduct(rayOriginToSphereCenter);
+
+        // c = (o - C)² - R²
+        double c = rayOriginToSphereCenter.dotProduct(rayOriginToSphereCenter) - this.radius2;
+
+        // apply general solution formula
+        double t1 = 0;
+        double t2 = 0;
+
+        double[] solution = this.generalSolutionFormula(a, b, c, t1, t2);
+
+        // TODO check for nearest t and store somewhere
+
+        return solution != null;
+    }
+
+    // https://www.scratchapixel.com/code.php?id=10&origin=/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes
+    private double[] generalSolutionFormula(double a, double b, double c, double t1, double t2) {
+        double[] solution = new double[2];
+
+        double discriminant = b * b - 4 * a * c;
+
+        if (discriminant < 0) { // no intersection was detected
+           return null;
+        } else if (discriminant == 0) { // one intersection was detected
+            t1 = t2 = - 0.5 * b / a;
+        } else if (discriminant > 0 ) { // multiple intersections were detected
+            double q = (b > 0) ?
+                    -0.5 * (b + Math.sqrt(discriminant)) :
+                    -0.5 * (b - Math.sqrt(discriminant));
+
+            t1 = q / a;
+            t2 = c /q;
+        }
+
+        solution[0] = t1;
+        solution[1] = t2;
+
+        return solution;
+    }
+
+}
