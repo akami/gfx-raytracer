@@ -45,7 +45,7 @@ public class Scene {
      *     <li> Multiply by 255 to get the corresponding rgb value. </li>
      *     <li> Apply a bit-shift in order to get the TYPE_INT_RGB values. </li>
      * </ol>
-     * @param coordinates
+     * @param coordinates the direction coordinate of the ray
      * @return integer byte array with corresponding rgb values
      */
     private int[] mapToRgb(double[] coordinates) {
@@ -53,7 +53,7 @@ public class Scene {
 
         int r = (int)(((coordinates[0] + 1.0) / 2.0) * 255.0);
         int g = (int)(((coordinates[1] + 1.0) / 2.0) * 255.0);
-        int b = 0;
+        int b = 0; // the z value is always -1 which corresponds to 0 in rgb value
 
         int rgb = r << 16 | g << 8 | b;
 
