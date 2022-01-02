@@ -78,10 +78,9 @@ public class Parser {
         try {
             File file = new File("./output/" + scene.getOutputFile());
 
-            int width = Integer.parseInt(scene.getCamera().getResolution().getHorizontal());
-            int height = Integer.parseInt(scene.getCamera().getResolution().getVertical());
+            at.ac.univie.unet.a01638800.raytracer.Scene raytracedScene = new at.ac.univie.unet.a01638800.raytracer.Scene(scene);
 
-            BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            BufferedImage image = raytracedScene.getImage();;
             ImageIO.write(image, "PNG", file);
 
             return file;

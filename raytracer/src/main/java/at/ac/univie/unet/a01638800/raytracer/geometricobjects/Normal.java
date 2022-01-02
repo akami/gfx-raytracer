@@ -1,13 +1,13 @@
 package at.ac.univie.unet.a01638800.raytracer.geometricobjects;
 
-public class Point {
+public class Normal {
     private Coordinate coordinate;
 
-    public Point() {
+    public Normal() {
         // empty
     }
 
-    public Point(double x, double y, double z) {
+    public Normal(double x, double y, double z) {
         double[] xyzValues = new double[3];
 
         xyzValues[0] = x;
@@ -39,13 +39,5 @@ public class Point {
 
     public void setZ(double z) {
         this.coordinate.getXyzValues()[2] = z;
-    }
-
-    public Point addVector(Vector vector) {
-        return new Point(this.getX() + vector.getX(), this.getY() + vector.getY(), this.getZ() + vector.getZ());
-    }
-
-    public Vector subtractPoint(Point point) {
-        return new Vector(this.getX() - point.getX(), this.getY() + point.getY(), this.getZ() - point.getZ());
     }
 }
