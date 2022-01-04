@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class Scene {
+    private at.ac.univie.unet.a01638800.raytracer.scene.Scene parsedScene;
     private Camera camera;
     private Sphere[] spheres;
 
@@ -15,6 +16,7 @@ public class Scene {
     private BufferedImage image;
 
     public Scene(at.ac.univie.unet.a01638800.raytracer.scene.Scene scene) {
+        this.parsedScene = scene;
         this.camera = new Camera(scene.getCamera());
 
         // assuming that all surfaces are of type sphere
@@ -26,7 +28,6 @@ public class Scene {
         for (Surface surface : scene.getSurfaces().getSurfaces()) {
             if(surface instanceof at.ac.univie.unet.a01638800.raytracer.scene.Sphere) {
                 spheres[i] = new Sphere((at.ac.univie.unet.a01638800.raytracer.scene.Sphere) surface);
-                spheres[i].getCenter().normalize();
                 i++;
             }
         }
@@ -51,15 +52,31 @@ public class Scene {
                 double[] coordinates = this.camera.getRays()[x][y].getDirection().getCoordinate().getXyzValues();
 
                 boolean intersectionDetected = false;
+                double[] pixelColor = new double[3];
 
                 for (Sphere sphere : this.spheres) {
                     intersectionDetected = sphere.intersectionDetected(this.camera.getRays()[x][y]);
+
+                    if(intersectionDetected) {
+
+                        pixelColor[0] = Double.parseDouble(sphere.getParsedSphere().getMaterialSolid().getColor().getR());
+                        pixelColor[1] = Double.parseDouble(sphere.getParsedSphere().getMaterialSolid().getColor().getG());
+                        pixelColor[2] = Double.parseDouble(sphere.getParsedSphere().getMaterialSolid().getColor().getR());
+
+                        break;
+                    }
                 }
 
                 if(intersectionDetected) {
-                    this.image.setRGB(x, y, Color.WHITE.getRGB());
+                    this.image.getRaster().setDataElements(x, y, mapColorToRgb(pixelColor));
                 } else {
-                    this.image.getRaster().setDataElements(x, y, mapToRgb(coordinates));
+                    double[] backgroundColor = new double[3];
+
+                    backgroundColor[0] = Double.parseDouble(this.parsedScene.getBackgroundColor().getR());
+                    backgroundColor[1] = Double.parseDouble(this.parsedScene.getBackgroundColor().getG());
+                    backgroundColor[2] = Double.parseDouble(this.parsedScene.getBackgroundColor().getR());
+
+                    this.image.getRaster().setDataElements(x, y, mapColorToRgb(backgroundColor));
                 }
             }
         }
@@ -78,12 +95,28 @@ public class Scene {
      * @param coordinates the direction coordinate of the ray
      * @return integer byte array with corresponding rgb values
      */
-    private int[] mapToRgb(double[] coordinates) {
+    private int[] mapCoordinatesToRgb(double[] coordinates) {
         int[] rgbValues = new int[1];
 
+        // coordinates are initially between -1 and 1
         int r = (int)(((coordinates[0] + 1.0) / 2.0) * 255.0);
         int g = (int)(((coordinates[1] + 1.0) / 2.0) * 255.0);
         int b = 0; // the z value is always -1 which corresponds to 0 in rgb value
+
+        int rgb = r << 16 | g << 8 | b;
+
+        rgbValues[0] = rgb;
+
+        return rgbValues;
+    }
+
+    private int[] mapColorToRgb(double[] color) {
+        int[] rgbValues = new int[1];
+
+        // color is initially already normalized between 0 and 1
+        int r = (int) (color[0] * 255.0);
+        int g = (int) (color[1] * 255.0);
+        int b = (int) (color[2] * 255.0);
 
         int rgb = r << 16 | g << 8 | b;
 

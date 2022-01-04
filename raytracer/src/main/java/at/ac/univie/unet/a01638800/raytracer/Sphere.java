@@ -110,7 +110,7 @@ public class Sphere implements Intersection {
                     -0.5 * (b - Math.sqrt(discriminant));
 
             t1 = q / a;
-            t2 = c /q;
+            t2 = c / q;
         }
 
         solution[0] = t1;
