@@ -1,4 +1,4 @@
-package at.ac.univie.unet.a01638800.raytracer;
+package at.ac.univie.unet.a01638800.raytracer.geometricobjects;
 
 import at.ac.univie.unet.a01638800.raytracer.geometricobjects.Point;
 import at.ac.univie.unet.a01638800.raytracer.geometricobjects.Vector;

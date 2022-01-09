@@ -25,6 +25,16 @@ public class Point {
         this.coordinate = new Coordinate(xyzValues);
     }
 
+    public Point(Point origin, Vector direction, double t) {
+        double[] xyzValues = new double[3];
+
+        xyzValues[0] = origin.getX() + t * direction.getX();
+        xyzValues[1] = origin.getY() + t * direction.getY();
+        xyzValues[2] = origin.getZ() + t * direction.getZ();
+
+        this.coordinate = new Coordinate(xyzValues);
+    }
+
     public double getX() {
         return this.coordinate.getXyzValues()[0];
     }

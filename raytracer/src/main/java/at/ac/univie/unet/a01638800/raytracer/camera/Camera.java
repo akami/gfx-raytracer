@@ -1,7 +1,8 @@
-package at.ac.univie.unet.a01638800.raytracer;
+package at.ac.univie.unet.a01638800.raytracer.camera;
 
 import at.ac.univie.unet.a01638800.raytracer.geometricobjects.Coordinate;
 import at.ac.univie.unet.a01638800.raytracer.geometricobjects.Point;
+import at.ac.univie.unet.a01638800.raytracer.geometricobjects.Ray;
 import at.ac.univie.unet.a01638800.raytracer.geometricobjects.Vector;
 import at.ac.univie.unet.a01638800.raytracer.scene.Position;
 
@@ -45,11 +46,11 @@ public class Camera {
         this.rays = rays;
     }
 
-    public double getImageWidth() {
+    public int getImageWidth() {
         return imageWidth;
     }
 
-    public double getImageHeight() {
+    public int getImageHeight() {
         return imageHeight;
     }
 
@@ -83,11 +84,18 @@ public class Camera {
     }
 
     private void includeFOVAndImageDimensions(Coordinate coordinate) {
-        double fovX = Double.parseDouble(this.inputCamera.getHorizontalFov().getAngle()) ;
-        double fovY = fovX * ((double) this.imageHeight / (double) this.imageWidth);
+        double fovX = 0;
+        double fovY = 0;
+
+        if (this.imageWidth >= this.imageHeight) {
+            fovX = Double.parseDouble(this.inputCamera.getHorizontalFov().getAngle()) ;
+            fovY = fovX * ((double) this.imageHeight / (double) this.imageWidth);
+        } else {
+            fovY = Double.parseDouble(this.inputCamera.getHorizontalFov().getAngle());
+            fovX = fovY * ((double) this.imageWidth/ (double) this.imageHeight);
+        }
 
         coordinate.getXyzValues()[0] = coordinate.getXyzValues()[0] * Math.tan(fovX * (Math.PI / 180));
         coordinate.getXyzValues()[1] = coordinate.getXyzValues()[1] * Math.tan(fovY * (Math.PI / 180));
     }
-
 }

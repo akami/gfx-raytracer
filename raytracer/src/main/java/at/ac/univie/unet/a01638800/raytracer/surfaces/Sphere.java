@@ -1,16 +1,18 @@
-package at.ac.univie.unet.a01638800.raytracer;
+package at.ac.univie.unet.a01638800.raytracer.surfaces;
 
+import at.ac.univie.unet.a01638800.raytracer.geometricobjects.Ray;
 import at.ac.univie.unet.a01638800.raytracer.geometricobjects.Point;
 import at.ac.univie.unet.a01638800.raytracer.geometricobjects.Vector;
+import at.ac.univie.unet.a01638800.raytracer.intersection.Intersection;
 
-public class Sphere implements Intersection {
+public class Sphere extends Surface {
     private at.ac.univie.unet.a01638800.raytracer.scene.Sphere parsedSphere;
     private Point center;
     private double radius;
     private double radius2;
 
     public Sphere(Point center, double radius) {
-        this.center = center;
+        super();
         this.radius = radius;
         this.radius2 = radius * radius;
     }
@@ -60,7 +62,7 @@ public class Sphere implements Intersection {
     }
 
     @Override
-    public boolean intersectionDetected(Ray ray) {
+    public Intersection intersectionDetected(Ray ray) {
         // o
         Point rayOrigin = ray.getOrigin();
 
@@ -89,9 +91,13 @@ public class Sphere implements Intersection {
 
         double[] solution = this.generalSolutionFormula(a, b, c, t1, t2);
 
-        // TODO check for nearest t and store somewhere
-
-        return solution != null;
+        if(solution == null) {
+            return null;
+        } else if(solution[0] >= solution [1]) {
+            return new Intersection(rayOrigin, this.center, rayDirection, solution[0]);
+        } else {
+            return new Intersection(rayOrigin, this.center, rayDirection, solution[1]);
+        }
     }
 
     // https://www.scratchapixel.com/code.php?id=10&origin=/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes

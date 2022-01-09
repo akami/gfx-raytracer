@@ -1,12 +1,15 @@
-package at.ac.univie.unet.a01638800.raytracer;
+package at.ac.univie.unet.a01638800.raytracer.raytracedscene;
 
+import at.ac.univie.unet.a01638800.raytracer.camera.Camera;
+import at.ac.univie.unet.a01638800.raytracer.intersection.Intersection;
+import at.ac.univie.unet.a01638800.raytracer.scene.Scene;
 import at.ac.univie.unet.a01638800.raytracer.scene.Surface;
+import at.ac.univie.unet.a01638800.raytracer.surfaces.Sphere;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class Scene {
-    private at.ac.univie.unet.a01638800.raytracer.scene.Scene parsedScene;
+public class RaytracedScene {
+    private Scene parsedScene;
     private Camera camera;
     private Sphere[] spheres;
 
@@ -15,7 +18,7 @@ public class Scene {
 
     private BufferedImage image;
 
-    public Scene(at.ac.univie.unet.a01638800.raytracer.scene.Scene scene) {
+    public RaytracedScene(Scene scene) {
         this.parsedScene = scene;
         this.camera = new Camera(scene.getCamera());
 
@@ -55,13 +58,14 @@ public class Scene {
                 double[] pixelColor = new double[3];
 
                 for (Sphere sphere : this.spheres) {
-                    intersectionDetected = sphere.intersectionDetected(this.camera.getRays()[x][y]);
+                    Intersection intersection = sphere.intersectionDetected(this.camera.getRays()[x][y]);
 
-                    if(intersectionDetected) {
+                    if (intersection != null) {
+                        intersectionDetected = true;
 
                         pixelColor[0] = Double.parseDouble(sphere.getParsedSphere().getMaterialSolid().getColor().getR());
                         pixelColor[1] = Double.parseDouble(sphere.getParsedSphere().getMaterialSolid().getColor().getG());
-                        pixelColor[2] = Double.parseDouble(sphere.getParsedSphere().getMaterialSolid().getColor().getR());
+                        pixelColor[2] = Double.parseDouble(sphere.getParsedSphere().getMaterialSolid().getColor().getB());
 
                         break;
                     }
@@ -74,7 +78,7 @@ public class Scene {
 
                     backgroundColor[0] = Double.parseDouble(this.parsedScene.getBackgroundColor().getR());
                     backgroundColor[1] = Double.parseDouble(this.parsedScene.getBackgroundColor().getG());
-                    backgroundColor[2] = Double.parseDouble(this.parsedScene.getBackgroundColor().getR());
+                    backgroundColor[2] = Double.parseDouble(this.parsedScene.getBackgroundColor().getB());
 
                     this.image.getRaster().setDataElements(x, y, mapColorToRgb(backgroundColor));
                 }

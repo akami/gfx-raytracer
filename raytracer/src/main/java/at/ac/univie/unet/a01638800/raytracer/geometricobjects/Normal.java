@@ -17,6 +17,18 @@ public class Normal {
         this.coordinate = new Coordinate(xyzValues);
     }
 
+    public Normal(Vector vector) {
+        vector.normalize();
+
+        double[] xyzValues = new double[3];
+
+        xyzValues[0] = vector.getX();
+        xyzValues[1] = vector.getY();
+        xyzValues[2] = vector.getZ();
+
+        this.coordinate = new Coordinate(xyzValues);
+    }
+
     public double getX() {
         return this.coordinate.getXyzValues()[0];
     }
