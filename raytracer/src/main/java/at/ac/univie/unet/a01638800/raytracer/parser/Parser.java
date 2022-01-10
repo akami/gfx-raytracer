@@ -1,5 +1,6 @@
 package at.ac.univie.unet.a01638800.raytracer.parser;
 
+import at.ac.univie.unet.a01638800.raytracer.DebugMode;
 import at.ac.univie.unet.a01638800.raytracer.raytracedscene.RaytracedScene;
 import at.ac.univie.unet.a01638800.raytracer.scene.ObjectFactory;
 import at.ac.univie.unet.a01638800.raytracer.scene.Scene;
@@ -75,11 +76,11 @@ public class Parser {
         }
     }
 
-    public File parseSceneToFile(Scene scene) throws ParserException {
+    public File parseSceneToFile(Scene scene, DebugMode debugMode) throws ParserException {
         try {
             File file = new File("./output/" + scene.getOutputFile());
 
-            RaytracedScene raytracedScene = new RaytracedScene(scene);
+            RaytracedScene raytracedScene = new RaytracedScene(scene, debugMode);
 
             BufferedImage image = raytracedScene.getImage();;
             ImageIO.write(image, "PNG", file);

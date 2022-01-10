@@ -61,7 +61,7 @@ public class Camera {
 
                 Vector direction = new Vector(x, y, -1.0);
 
-                this.normalizeCoordinate(direction);
+                this.normalizeCoordinate(direction.getCoordinate());
                 this.mapCoordinateToImagePlane(direction.getCoordinate());
                 this.includeFOVAndImageDimensions(direction.getCoordinate());
 
@@ -73,9 +73,9 @@ public class Camera {
         }
     }
 
-    public void normalizeCoordinate(Vector direction) {
-        direction.setX((direction.getX() + OFFSET) / this.imageWidth);
-        direction.setY((direction.getY() + OFFSET) / this.imageHeight);
+    public void normalizeCoordinate(Coordinate coordinate) {
+        coordinate.getXyzValues()[0] = (coordinate.getXyzValues()[0] + OFFSET) / this.imageWidth;
+        coordinate.getXyzValues()[1] = (coordinate.getXyzValues()[1] + OFFSET) / this.imageHeight;
     }
 
     private void mapCoordinateToImagePlane(Coordinate coordinate) {
@@ -88,14 +88,14 @@ public class Camera {
         double fovY = 0;
 
         if (this.imageWidth >= this.imageHeight) {
-            fovX = Double.parseDouble(this.inputCamera.getHorizontalFov().getAngle()) ;
+            fovX = Double.parseDouble(this.inputCamera.getHorizontalFov().getAngle()) * (Math.PI / 180);
             fovY = fovX * ((double) this.imageHeight / (double) this.imageWidth);
         } else {
-            fovY = Double.parseDouble(this.inputCamera.getHorizontalFov().getAngle());
-            fovX = fovY * ((double) this.imageWidth/ (double) this.imageHeight);
+            fovX = Double.parseDouble(this.inputCamera.getHorizontalFov().getAngle()) * (Math.PI / 180);
+            fovY = fovX * ((double) this.imageWidth / (double) this.imageHeight);
         }
 
-        coordinate.getXyzValues()[0] = coordinate.getXyzValues()[0] * Math.tan(fovX * (Math.PI / 180));
-        coordinate.getXyzValues()[1] = coordinate.getXyzValues()[1] * Math.tan(fovY * (Math.PI / 180));
+        coordinate.getXyzValues()[0] = coordinate.getXyzValues()[0] * Math.tan(fovX);
+        coordinate.getXyzValues()[1] = coordinate.getXyzValues()[1] * Math.tan(fovY);
     }
 }

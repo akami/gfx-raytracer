@@ -51,7 +51,7 @@ public class Intersection {
     }
 
     private Normal computeNormal() {
-        Vector vector = this.intersectionPoint.subtractPoint(this.objectCenter);
+        Vector vector = this.objectCenter.subtractPoint(this.intersectionPoint);
 
         return new Normal(vector);
     }

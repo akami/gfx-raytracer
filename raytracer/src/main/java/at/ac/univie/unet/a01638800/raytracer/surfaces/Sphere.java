@@ -63,33 +63,23 @@ public class Sphere extends Surface {
 
     @Override
     public Intersection intersectionDetected(Ray ray) {
-        // o
         Point rayOrigin = ray.getOrigin();
-
-        // d
         Vector rayDirection = ray.getDirection();
 
-        // solve (dt)² + 2d * (o - C)t + (o - C)² - R² = 0 for t
+        Point sphereCenter = this.center;
+        double sphereRadiusSquared = this.radius2;
 
-        // (o - C)
-        Vector rayOriginToSphereCenter = this.center.subtractPoint(rayOrigin);
+        // 1. L = origin - center
+        Vector rayOriginToSphereCenter = rayOrigin.subtractPoint(sphereCenter);
 
-        // a * t² + b * t + c = 0
-
-        // a = d²
         double a = rayDirection.dotProduct(rayDirection);
-
-        // b = 2 * d * (o - C)
         double b = 2 * rayDirection.dotProduct(rayOriginToSphereCenter);
+        double c = rayOriginToSphereCenter.dotProduct(rayOriginToSphereCenter) - sphereRadiusSquared;
 
-        // c = (o - C)² - R²
-        double c = rayOriginToSphereCenter.dotProduct(rayOriginToSphereCenter) - this.radius2;
-
-        // apply general solution formula
         double t1 = 0;
         double t2 = 0;
 
-        double[] solution = this.generalSolutionFormula(a, b, c, t1, t2);
+        double[] solution = generalSolutionFormula(a, b, c, t1, t2);
 
         if(solution == null) {
             return null;
@@ -109,7 +99,8 @@ public class Sphere extends Surface {
         if (discriminant < 0) { // no intersection was detected
            return null;
         } else if (discriminant == 0) { // one intersection was detected
-            t1 = t2 = - 0.5 * b / a;
+            t1 = - 0.5 * b / a;
+            t2 = t1;
         } else if (discriminant > 0 ) { // multiple intersections were detected
             double q = (b > 0) ?
                     -0.5 * (b + Math.sqrt(discriminant)) :

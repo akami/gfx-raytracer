@@ -15,7 +15,7 @@ public class Main {
         Parser parser = Parser.getInstance();
 
         Scene scene = parser.parseFile(new FileInputStream(filePath));
-        File file = parser.parseSceneToFile(scene);
+        File file = parser.parseSceneToFile(scene, DebugMode.NORMALS);
 
         System.out.println(file);
     }

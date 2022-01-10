@@ -18,13 +18,14 @@ public class Normal {
     }
 
     public Normal(Vector vector) {
-        vector.normalize();
+        Vector normal = new Vector(vector.getX(), vector.getY(), vector.getZ());
+        normal.normalize();
 
         double[] xyzValues = new double[3];
 
-        xyzValues[0] = vector.getX();
-        xyzValues[1] = vector.getY();
-        xyzValues[2] = vector.getZ();
+        xyzValues[0] = normal.getX();
+        xyzValues[1] = normal.getY();
+        xyzValues[2] = normal.getZ();
 
         this.coordinate = new Coordinate(xyzValues);
     }

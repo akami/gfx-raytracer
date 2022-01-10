@@ -1,11 +1,13 @@
 package at.ac.univie.unet.a01638800.raytracer.raytracedscene;
 
+import at.ac.univie.unet.a01638800.raytracer.DebugMode;
 import at.ac.univie.unet.a01638800.raytracer.camera.Camera;
 import at.ac.univie.unet.a01638800.raytracer.intersection.Intersection;
 import at.ac.univie.unet.a01638800.raytracer.scene.Scene;
 import at.ac.univie.unet.a01638800.raytracer.scene.Surface;
 import at.ac.univie.unet.a01638800.raytracer.surfaces.Sphere;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class RaytracedScene {
@@ -18,8 +20,12 @@ public class RaytracedScene {
 
     private BufferedImage image;
 
-    public RaytracedScene(Scene scene) {
+    private DebugMode debugMode;
+
+    public RaytracedScene(Scene scene, DebugMode debugMode) {
         this.parsedScene = scene;
+        this.debugMode = debugMode;
+
         this.camera = new Camera(scene.getCamera());
 
         // assuming that all surfaces are of type sphere
@@ -50,19 +56,30 @@ public class RaytracedScene {
     }
 
     private void calculatePixels() {
+
+        switch (this.debugMode) {
+            case RAY_DIRECTION:
+                this.calculatePixelsRayDirectionDebugMode();
+                break;
+            case NORMALS:
+                this.calculatePixelsNormalsDebugMode();
+                break;
+            default:
+                this.calculatePixelsNoDebugMode();
+                break;
+        }
+    }
+
+    private void calculatePixelsNoDebugMode() {
         for(int x = 0; x < this.sceneWidth; x++) {
             for(int y = 0; y < this.sceneHeight; y ++) {
-                double[] coordinates = this.camera.getRays()[x][y].getDirection().getCoordinate().getXyzValues();
-
-                boolean intersectionDetected = false;
                 double[] pixelColor = new double[3];
+                Intersection intersection = null;
 
                 for (Sphere sphere : this.spheres) {
-                    Intersection intersection = sphere.intersectionDetected(this.camera.getRays()[x][y]);
+                    intersection = sphere.intersectionDetected(this.camera.getRays()[x][y]);
 
                     if (intersection != null) {
-                        intersectionDetected = true;
-
                         pixelColor[0] = Double.parseDouble(sphere.getParsedSphere().getMaterialSolid().getColor().getR());
                         pixelColor[1] = Double.parseDouble(sphere.getParsedSphere().getMaterialSolid().getColor().getG());
                         pixelColor[2] = Double.parseDouble(sphere.getParsedSphere().getMaterialSolid().getColor().getB());
@@ -71,17 +88,70 @@ public class RaytracedScene {
                     }
                 }
 
-                if(intersectionDetected) {
+                if (intersection == null) {
+                    pixelColor[0] = Double.parseDouble(this.parsedScene.getBackgroundColor().getR());
+                    pixelColor[1] = Double.parseDouble(this.parsedScene.getBackgroundColor().getG());
+                    pixelColor[2] = Double.parseDouble(this.parsedScene.getBackgroundColor().getB());
+                }
+
+                this.image.getRaster().setDataElements(x, y, mapColorToRgb(pixelColor));
+            }
+        }
+    }
+
+    private void calculatePixelsRayDirectionDebugMode() {
+        for(int x = 0; x < this.sceneWidth; x++) {
+            for(int y = 0; y < this.sceneHeight; y ++) {
+                double[] coordinates = this.camera.getRays()[x][y].getDirection().getCoordinate().getXyzValues();
+                Intersection intersection = null;
+
+                for (Sphere sphere : this.spheres) {
+                    intersection = sphere.intersectionDetected(this.camera.getRays()[x][y]);
+
+                    if(intersection != null) {
+                        break;
+                    }
+                }
+
+                if (intersection == null) {
+                    this.image.getRaster().setDataElements(x, y, mapCoordinatesToRgb(coordinates));
+                } else {
+                    this.image.setRGB(x, y, Color.WHITE.getRGB());
+                }
+            }
+        }
+    }
+
+    private void calculatePixelsNormalsDebugMode() {
+        for(int x = 0; x < this.sceneWidth; x++) {
+            for(int y = 0; y < this.sceneHeight; y ++) {
+                double[] normalCoordinates = new double[3];
+                double[] pixelColor = new double[3];
+                Intersection intersection = null;
+
+                for (Sphere sphere : this.spheres) {
+                    intersection = sphere.intersectionDetected(this.camera.getRays()[x][y]);
+
+                    if(intersection != null) {
+                        break;
+                    }
+                }
+
+                if (intersection == null) {
+                    pixelColor[0] = Double.parseDouble(this.parsedScene.getBackgroundColor().getR());
+                    pixelColor[1] = Double.parseDouble(this.parsedScene.getBackgroundColor().getG());
+                    pixelColor[2] = Double.parseDouble(this.parsedScene.getBackgroundColor().getB());
+
                     this.image.getRaster().setDataElements(x, y, mapColorToRgb(pixelColor));
                 } else {
-                    double[] backgroundColor = new double[3];
+                    normalCoordinates[0] = intersection.getNormal().getX();
+                    normalCoordinates[1] = intersection.getNormal().getY();
+                    normalCoordinates[2] = intersection.getNormal().getZ();
 
-                    backgroundColor[0] = Double.parseDouble(this.parsedScene.getBackgroundColor().getR());
-                    backgroundColor[1] = Double.parseDouble(this.parsedScene.getBackgroundColor().getG());
-                    backgroundColor[2] = Double.parseDouble(this.parsedScene.getBackgroundColor().getB());
-
-                    this.image.getRaster().setDataElements(x, y, mapColorToRgb(backgroundColor));
+                    this.image.getRaster().setDataElements(x, y, mapCoordinatesToRgb(normalCoordinates));
                 }
+
+
             }
         }
     }
