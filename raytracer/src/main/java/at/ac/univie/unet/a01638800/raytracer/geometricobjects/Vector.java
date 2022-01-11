@@ -91,8 +91,10 @@ public class Vector {
         return new Vector(x, y, z);
     }
 
-    public Vector invert() {
-        return new Vector(-this.getX(), -this.getY(), -this.getZ());
+    public void invert() {
+        this.coordinate.getXyzValues()[0] = -this.getX();
+        this.coordinate.getXyzValues()[1] = -this.getY();
+        this.coordinate.getXyzValues()[2] =  -this.getZ();
     }
 
     public void normalize() {

@@ -13,6 +13,8 @@ public class PhongShader {
     private final MaterialSolid materialSolid;
     private final Intersection intersection;
 
+    private Color lightColor;
+
     public PhongShader(Scene.Lights parsedLights, MaterialSolid materialSolid, Intersection intersection) {
         this.lights = parsedLights;
         this.materialSolid = materialSolid;
@@ -56,6 +58,7 @@ public class PhongShader {
                     Double.parseDouble(parallelLight.getDirection().getY()),
                     Double.parseDouble(parallelLight.getDirection().getZ())
             );
+            pointToLightVector.invert();
 
         } else if (this.lights.getLights().size() > 2) {
             // TODO implement
@@ -80,16 +83,8 @@ public class PhongShader {
         double diffuseFactor = Math.max(0.0, pointToLightVector.dotProduct(this.intersection.getNormal()));
         diffuse = diffuse.multiplyByFactor(diffuseFactor);
 
-        Color specular = objectColor.multiplyByFactor(Double.parseDouble(this.materialSolid.getPhong().getKs()));
-
-        double specularFactor = reflectionVector.dotProduct(pointToCameraVector);
-        // TODO switch
-        specularFactor = Math.pow(specularFactor, Double.parseDouble(this.materialSolid.getPhong().getExponent()));
-        specular = specular.multiplyByFactor(Math.max(0.0, specularFactor));
-
         colorComponents[0] = ambient;
         colorComponents[1] = diffuse;
-        colorComponents[2] = specular;
 
         return colorComponents;
     }
