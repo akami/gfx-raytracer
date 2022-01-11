@@ -31,11 +31,14 @@ public class PhongShader {
         );
 
         Vector pointToLightVector = this.getPointToLightVector();
-        Vector pointToCameraVector = new Vector();
-        Vector reflectionVector = normalVector.subtractVector(pointToLightVector);
+        pointToLightVector.normalize();
 
+        Vector pointToCameraVector = new Vector();
+
+        Vector reflectionVector = normalVector.subtractVector(pointToLightVector);
         reflectionVector = reflectionVector.scaleByFactor(pointToLightVector.dotProduct(normalVector));
         reflectionVector = reflectionVector.scaleByFactor(2.0);
+        reflectionVector.normalize();
 
         Color[] colorComponents = this.computeColorComponents(pointToLightVector, pointToCameraVector, reflectionVector);
 
