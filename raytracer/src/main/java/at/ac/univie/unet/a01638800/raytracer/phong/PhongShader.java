@@ -1,7 +1,6 @@
 package at.ac.univie.unet.a01638800.raytracer.phong;
 
 import at.ac.univie.unet.a01638800.raytracer.geometricobjects.Color;
-import at.ac.univie.unet.a01638800.raytracer.geometricobjects.Normal;
 import at.ac.univie.unet.a01638800.raytracer.geometricobjects.Vector;
 import at.ac.univie.unet.a01638800.raytracer.intersection.Intersection;
 import at.ac.univie.unet.a01638800.raytracer.scene.MaterialSolid;
@@ -55,10 +54,9 @@ public class PhongShader {
             ParallelLight parallelLight = (ParallelLight) this.lights.getLights().get(1);
 
             pointToLightVector = new Vector(
-                    intersection.getIntersectionPoint(),
-                    -Double.parseDouble(parallelLight.getDirection().getX()),
-                    -Double.parseDouble(parallelLight.getDirection().getY()),
-                    -Double.parseDouble(parallelLight.getDirection().getZ())
+                    Double.parseDouble(parallelLight.getDirection().getX()),
+                    Double.parseDouble(parallelLight.getDirection().getY()),
+                    Double.parseDouble(parallelLight.getDirection().getZ())
             );
             pointToLightVector.invert();
 
