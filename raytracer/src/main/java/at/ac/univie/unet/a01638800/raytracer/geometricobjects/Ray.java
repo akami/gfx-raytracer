@@ -9,6 +9,8 @@ public class Ray {
     public Ray() {
         this.origin = new Point();
         this.direction = new Vector();
+        this.minDistance = 0.1;
+        this.maxDistance = 100;
     }
 
     public Ray(Point origin, Vector direction, double minDistance, double maxDistance) {

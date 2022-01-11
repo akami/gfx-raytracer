@@ -80,7 +80,7 @@ public class Vector {
     }
 
     public double dotProduct(Normal normal) {
-        return (this.getX() * normal.getX() + this.getY() * normal.getY() + this.getZ() * normal.getY());
+        return (this.getX() * normal.getX() + this.getY() * normal.getY() + this.getZ() * normal.getZ());
     }
 
     public Vector crossProduct(Vector vector) {
@@ -94,7 +94,7 @@ public class Vector {
     public void invert() {
         this.coordinate.getXyzValues()[0] = -this.getX();
         this.coordinate.getXyzValues()[1] = -this.getY();
-        this.coordinate.getXyzValues()[2] =  -this.getZ();
+        this.coordinate.getXyzValues()[2] = -this.getZ();
     }
 
     public void normalize() {

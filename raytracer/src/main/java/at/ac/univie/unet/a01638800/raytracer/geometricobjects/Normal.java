@@ -7,16 +7,6 @@ public class Normal {
         // empty
     }
 
-    public Normal(double x, double y, double z) {
-        double[] xyzValues = new double[3];
-
-        xyzValues[0] = x;
-        xyzValues[1] = y;
-        xyzValues[2] = z;
-
-        this.coordinate = new Coordinate(xyzValues);
-    }
-
     public Normal(Vector vector) {
         Vector normal = new Vector(vector.getX(), vector.getY(), vector.getZ());
         normal.normalize();
