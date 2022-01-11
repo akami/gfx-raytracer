@@ -95,7 +95,7 @@ public class RaytracedScene {
                     pixelColor[2] = Double.parseDouble(this.parsedScene.getBackgroundColor().getB());
                 }
 
-                this.image.getRaster().setDataElements(x, y, mapColorToRgb(pixelColor));
+                this.image.getRaster().setDataElements(x, this.sceneHeight - 1 - y, mapColorToRgb(pixelColor));
             }
         }
     }
@@ -124,7 +124,7 @@ public class RaytracedScene {
                     pixelColor[2] = Double.parseDouble(this.parsedScene.getBackgroundColor().getB());
                 }
 
-                this.image.getRaster().setDataElements(x, y, mapColorToRgb(pixelColor));
+                this.image.getRaster().setDataElements(x, this.sceneHeight - 1 - y, mapColorToRgb(pixelColor));
             }
         }
     }
@@ -144,9 +144,9 @@ public class RaytracedScene {
                 }
 
                 if (intersection == null) {
-                    this.image.getRaster().setDataElements(x, y, mapCoordinatesToRgb(coordinates));
+                    this.image.getRaster().setDataElements(x, this.sceneHeight - 1 - y, mapCoordinatesToRgb(coordinates));
                 } else {
-                    this.image.setRGB(x, y, Color.WHITE.getRGB());
+                    this.image.setRGB(x, this.sceneHeight - 1 - y, Color.WHITE.getRGB());
                 }
             }
         }

@@ -123,5 +123,4 @@ public class Sphere extends Surface {
 
         return solution;
     }
-
 }
