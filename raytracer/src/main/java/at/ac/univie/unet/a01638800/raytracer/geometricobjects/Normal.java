@@ -44,6 +44,10 @@ public class Normal {
         this.coordinate.getXyzValues()[2] = z;
     }
 
+    public double dotProduct(Vector vector) {
+        return (this.getX() * vector.getX() + this.getY() * vector.getY() + this.getZ() * vector.getZ());
+    }
+
     public Vector subtractVector(Vector vector) {
         return new Vector(this.getX() - vector.getX(), this.getY() - vector.getY(), this.getZ() - vector.getZ());
     }

@@ -180,8 +180,6 @@ public class RaytracedScene {
 
                     this.image.getRaster().setDataElements(x, y, mapCoordinatesToRgb(normalCoordinates));
                 }
-
-
             }
         }
     }
@@ -218,9 +216,9 @@ public class RaytracedScene {
         int[] rgbValues = new int[1];
 
         // color is initially already normalized between 0 and 1
-        int r = (int) (color[0] * 255.0);
-        int g = (int) (color[1] * 255.0);
-        int b = (int) (color[2] * 255.0);
+        int r = (int) (color[0] * 255.999);
+        int g = (int) (color[1] * 255.999);
+        int b = (int) (color[2] * 255.999);
 
         int rgb = r << 16 | g << 8 | b;
 

@@ -36,11 +36,10 @@ public class PhongShader {
         Vector pointToCameraVector = new Vector();
 
         Vector reflectionVector = normalVector.subtractVector(pointToLightVector);
-        reflectionVector = reflectionVector.scaleByFactor(pointToLightVector.dotProduct(normalVector));
-        reflectionVector = reflectionVector.scaleByFactor(2.0);
+        reflectionVector = reflectionVector.scaleByFactor(2.0 * normalVector.dotProduct(pointToLightVector));
         reflectionVector.normalize();
 
-        Color[] colorComponents = this.computeColorComponents(pointToLightVector, pointToCameraVector, reflectionVector);
+        Color[] colorComponents = this.computeColorComponents(normalVector, pointToLightVector, pointToCameraVector, reflectionVector);
 
         pixelColor[0] = colorComponents[0].getR() + colorComponents[1].getR();
         pixelColor[1] = colorComponents[0].getG() + colorComponents[1].getG();
@@ -57,6 +56,7 @@ public class PhongShader {
             ParallelLight parallelLight = (ParallelLight) this.lights.getLights().get(1);
 
             pointToLightVector = new Vector(
+                    intersection.getIntersectionPoint(),
                     Double.parseDouble(parallelLight.getDirection().getX()),
                     Double.parseDouble(parallelLight.getDirection().getY()),
                     Double.parseDouble(parallelLight.getDirection().getZ())
@@ -70,7 +70,7 @@ public class PhongShader {
         return pointToLightVector;
     }
 
-    private Color[] computeColorComponents(Vector pointToLightVector, Vector pointToCameraVector, Vector reflectionVector) {
+    private Color[] computeColorComponents(Vector normalVector, Vector pointToLightVector, Vector pointToCameraVector, Vector reflectionVector) {
         Color[] colorComponents = new Color[3];
 
         Color objectColor = new Color(
@@ -81,10 +81,9 @@ public class PhongShader {
 
         Color ambient = objectColor.multiplyByFactor(Double.parseDouble(this.materialSolid.getPhong().getKa()));
 
-        Color diffuse = objectColor.multiplyByFactor(Double.parseDouble(this.materialSolid.getPhong().getKd()));
-
-        double diffuseFactor = Math.max(0.0, pointToLightVector.dotProduct(this.intersection.getNormal()));
-        diffuse = diffuse.multiplyByFactor(diffuseFactor);
+        double diffuseFactor = Math.max(0.0, normalVector.dotProduct(pointToLightVector));
+        Color diffuse = objectColor.multiplyByFactor(diffuseFactor);
+        diffuse = diffuse.multiplyByFactor(Double.parseDouble(this.materialSolid.getPhong().getKd()));
 
         colorComponents[0] = ambient;
         colorComponents[1] = diffuse;

@@ -23,6 +23,16 @@ public class Vector {
        this.coordinate = new Coordinate(xyzValues);
     }
 
+    public Vector(Point origin, double x, double y, double z) {
+        double[] xyzValues = new double[3];
+
+        xyzValues[0] = origin.getX() + x;
+        xyzValues[1] = origin.getY() + y;
+        xyzValues[2] = origin.getZ() + z;
+
+        this.coordinate = new Coordinate(xyzValues);
+    }
+
     public Vector(Coordinate coordinate) {
         this.coordinate = coordinate;
     }
