@@ -1,39 +1,57 @@
 package at.ac.univie.unet.a01638800.raytracer.geometricobjects;
 
 public class Color {
-    private float r, g, b;
+    private double[] rgbValues;
 
     public Color(){
-        // empty
+        double[] rgbValues = new double[3];
+
+        rgbValues[0] = 0.0;
+        rgbValues[1] = 0.0;
+        rgbValues[2] = 0.0;
+
+        this.rgbValues = rgbValues;
     }
 
-    public Color(float r, float g, float b) {
-        this.r = r;
-        this.g = g;
-        this.b = b;
+    public Color(double r, double g, double b) {
+        double[] rgbValues = new double[3];
+
+        rgbValues[0] = r;
+        rgbValues[1] = g;
+        rgbValues[2] = b;
+
+        this.rgbValues = rgbValues;
     }
 
-    public float getR() {
-        return r;
+    public double getR() {
+        return this.rgbValues[0];
     }
 
-    public void setR(float r) {
-        this.r = r;
+    public void setR(double r) {
+        this.rgbValues[0] = r;
     }
 
-    public float getG() {
-        return g;
+    public double getG() {
+        return this.rgbValues[1];
     }
 
-    public void setG(float g) {
-        this.g = g;
+    public void setG(double g) {
+        this.rgbValues[1] = g;
     }
 
-    public float getB() {
-        return b;
+    public double getB() {
+        return this.rgbValues[2];
     }
 
-    public void setB(float b) {
-        this.b = b;
+    public void setB(double b) {
+        this.rgbValues[2] = b;
+    }
+
+    public Color multiplyByFactor(double factor) {
+        return new Color(this.getR() * factor, this.getG() * factor, this.getB() * factor);
+    }
+
+    public Color multiplyColor(Color color) {
+        return new Color(this.getR() * color.getR(), this.getG() * color.getG(), this.getB() * color.getB());
     }
 }

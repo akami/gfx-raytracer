@@ -69,12 +69,12 @@ public class Sphere extends Surface {
         Point sphereCenter = this.center;
         double sphereRadiusSquared = this.radius2;
 
-        // 1. L = origin - center
-        Vector rayOriginToSphereCenter = rayOrigin.subtractPoint(sphereCenter);
+        // analytic solution
+        Vector raySphereCenterToOrigin = rayOrigin.subtractPoint(sphereCenter);
 
         double a = rayDirection.dotProduct(rayDirection);
-        double b = 2 * rayDirection.dotProduct(rayOriginToSphereCenter);
-        double c = rayOriginToSphereCenter.dotProduct(rayOriginToSphereCenter) - sphereRadiusSquared;
+        double b = 2 * rayDirection.dotProduct(raySphereCenterToOrigin);
+        double c = raySphereCenterToOrigin.dotProduct(raySphereCenterToOrigin) - sphereRadiusSquared;
 
         double t1 = 0;
         double t2 = 0;
@@ -83,11 +83,19 @@ public class Sphere extends Surface {
 
         if(solution == null) {
             return null;
-        } else if(solution[0] >= solution [1]) {
-            return new Intersection(rayOrigin, this.center, rayDirection, solution[0]);
+        } else if(solution[0] < 0){
+            if(solution[1] >= 0) {
+                return new Intersection(rayOrigin, this.center, rayDirection, solution[1]);
+            }
+        } else if(solution[1] < 0){
+            if(solution[0] >= 0) {
+                return new Intersection(rayOrigin, this.center, rayDirection, solution[0]);
+            }
         } else {
-            return new Intersection(rayOrigin, this.center, rayDirection, solution[1]);
+            return new Intersection(rayOrigin, this.center, rayDirection, Math.min(solution[0], solution[1]));
         }
+
+        return null;
     }
 
     // https://www.scratchapixel.com/code.php?id=10&origin=/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes

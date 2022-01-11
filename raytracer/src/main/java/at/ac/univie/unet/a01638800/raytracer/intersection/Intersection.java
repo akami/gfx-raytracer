@@ -9,19 +9,19 @@ public class Intersection {
     private Point rayOrigin;
     private Point objectCenter;
 
-    private Vector distance;
+    private Vector rayDirection;
     private Normal normal;
 
     public Intersection() {
         // nothing here
     }
 
-    public Intersection(Point origin, Point center, Vector distance, double t) {
+    public Intersection(Point origin, Point center, Vector rayDirection, double t) {
         this.rayOrigin = origin;
         this.objectCenter = center;
-        this.distance = distance;
+        this.rayDirection = rayDirection;
 
-        this.intersectionPoint = new Point(origin, distance, t);
+        this.intersectionPoint = new Point(origin, rayDirection, t);
 
         this.normal = this.computeNormal();
     }
@@ -34,12 +34,28 @@ public class Intersection {
         this.rayOrigin = rayOrigin;
     }
 
-    public Vector getDistance() {
-        return distance;
+    public Vector getRayDirection() {
+        return rayDirection;
     }
 
-    public void setDistance(Vector distance) {
-        this.distance = distance;
+    public void setRayDirection(Vector rayDirection) {
+        this.rayDirection = rayDirection;
+    }
+
+    public Point getIntersectionPoint() {
+        return intersectionPoint;
+    }
+
+    public void setIntersectionPoint(Point intersectionPoint) {
+        this.intersectionPoint = intersectionPoint;
+    }
+
+    public Point getObjectCenter() {
+        return objectCenter;
+    }
+
+    public void setObjectCenter(Point objectCenter) {
+        this.objectCenter = objectCenter;
     }
 
     public Normal getNormal() {
@@ -51,8 +67,6 @@ public class Intersection {
     }
 
     private Normal computeNormal() {
-        Vector vector = this.objectCenter.subtractPoint(this.intersectionPoint);
-
-        return new Normal(vector);
+        return new Normal(this.intersectionPoint.subtractPoint(this.objectCenter));
     }
 }

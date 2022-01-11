@@ -4,7 +4,13 @@ public class Vector {
     private Coordinate coordinate;
 
     public Vector() {
-        // empty
+        double[] xyzValues = new double[3];
+
+        xyzValues[0] = 0.0;
+        xyzValues[1] = 0.0;
+        xyzValues[2] = 0.0;
+
+        this.coordinate = new Coordinate(xyzValues);
     }
 
     public Vector(double x, double y, double z) {
@@ -85,10 +91,16 @@ public class Vector {
         return new Vector(x, y, z);
     }
 
+    public Vector invert() {
+        return new Vector(-this.getX(), -this.getY(), -this.getZ());
+    }
+
     public void normalize() {
-        this.coordinate.getXyzValues()[0] = this.getX()/this.getLength();
-        this.coordinate.getXyzValues()[1] = this.getY()/this.getLength();
-        this.coordinate.getXyzValues()[2] = this.getZ()/this.getLength();
+        double length = this.getLength();
+
+        this.coordinate.getXyzValues()[0] = this.getX() / length;
+        this.coordinate.getXyzValues()[1] = this.getY() / length;
+        this.coordinate.getXyzValues()[2] = this.getZ() / length;
     }
 
     private double getLength() {

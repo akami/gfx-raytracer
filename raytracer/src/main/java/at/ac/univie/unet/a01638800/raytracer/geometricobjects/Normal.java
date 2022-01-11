@@ -53,4 +53,8 @@ public class Normal {
     public void setZ(double z) {
         this.coordinate.getXyzValues()[2] = z;
     }
+
+    public Vector subtractVector(Vector vector) {
+        return new Vector(this.getX() - vector.getX(), this.getY() - vector.getY(), this.getZ() - vector.getZ());
+    }
 }

@@ -3,6 +3,7 @@ package at.ac.univie.unet.a01638800.raytracer.raytracedscene;
 import at.ac.univie.unet.a01638800.raytracer.DebugMode;
 import at.ac.univie.unet.a01638800.raytracer.camera.Camera;
 import at.ac.univie.unet.a01638800.raytracer.intersection.Intersection;
+import at.ac.univie.unet.a01638800.raytracer.phong.PhongShader;
 import at.ac.univie.unet.a01638800.raytracer.scene.Scene;
 import at.ac.univie.unet.a01638800.raytracer.scene.Surface;
 import at.ac.univie.unet.a01638800.raytracer.surfaces.Sphere;
@@ -64,6 +65,8 @@ public class RaytracedScene {
             case NORMALS:
                 this.calculatePixelsNormalsDebugMode();
                 break;
+            case NO_LIGHT:
+                this.calculatePixelsNoLightDebugMode();
             default:
                 this.calculatePixelsNoDebugMode();
                 break;
@@ -71,6 +74,33 @@ public class RaytracedScene {
     }
 
     private void calculatePixelsNoDebugMode() {
+        for(int x = 0; x < this.sceneWidth; x++) {
+            for(int y = 0; y < this.sceneHeight; y ++) {
+                double[] pixelColor = new double[3];
+                Intersection intersection = null;
+
+                for (Sphere sphere : this.spheres) {
+                    intersection = sphere.intersectionDetected(this.camera.getRays()[x][y]);
+
+                    if (intersection != null) {
+                        PhongShader shader = new PhongShader(parsedScene.getLights(), sphere.getParsedSphere().getMaterialSolid(), intersection);
+                        pixelColor = shader.calculatePixelColor();
+                        break;
+                    }
+                }
+
+                if (intersection == null) {
+                    pixelColor[0] = Double.parseDouble(this.parsedScene.getBackgroundColor().getR());
+                    pixelColor[1] = Double.parseDouble(this.parsedScene.getBackgroundColor().getG());
+                    pixelColor[2] = Double.parseDouble(this.parsedScene.getBackgroundColor().getB());
+                }
+
+                this.image.getRaster().setDataElements(x, y, mapColorToRgb(pixelColor));
+            }
+        }
+    }
+
+    private void calculatePixelsNoLightDebugMode() {
         for(int x = 0; x < this.sceneWidth; x++) {
             for(int y = 0; y < this.sceneHeight; y ++) {
                 double[] pixelColor = new double[3];
