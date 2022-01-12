@@ -3,9 +3,10 @@ package at.ac.univie.unet.a01638800.raytracer.phong;
 import at.ac.univie.unet.a01638800.raytracer.geometricobjects.Color;
 import at.ac.univie.unet.a01638800.raytracer.geometricobjects.Vector;
 import at.ac.univie.unet.a01638800.raytracer.intersection.Intersection;
+import at.ac.univie.unet.a01638800.raytracer.scene.AmbientLight;
+import at.ac.univie.unet.a01638800.raytracer.scene.Light;
 import at.ac.univie.unet.a01638800.raytracer.scene.MaterialSolid;
 import at.ac.univie.unet.a01638800.raytracer.scene.ParallelLight;
-import at.ac.univie.unet.a01638800.raytracer.scene.Scene;
 
 /**
  * This class implements the phong illumination and shading model used in the raytraced scene.
@@ -15,7 +16,7 @@ public class PhongShader {
     /**
      * The lights in the scene
      */
-    private final Scene.Lights lights;
+    private final Light light;
 
     /**
      * The material of the object to illuminate and shade
@@ -32,8 +33,8 @@ public class PhongShader {
      */
     private Color lightColor;
 
-    public PhongShader(Scene.Lights parsedLights, MaterialSolid materialSolid, Intersection intersection) {
-        this.lights = parsedLights;
+    public PhongShader(Light light, MaterialSolid materialSolid, Intersection intersection) {
+        this.light = light;
         this.materialSolid = materialSolid;
         this.intersection = intersection;
     }
@@ -48,7 +49,7 @@ public class PhongShader {
      *
      * @return rgb array of pixel color
      */
-    public double[] calculatePixelColor() {
+    public Color calculatePixelColor() {
         // set up vectors
         Vector normalVector = this.intersection.getNormal();
         Vector pointToLightVector = this.getPointToLightVector();
@@ -56,10 +57,7 @@ public class PhongShader {
 
         Vector reflectionVector = this.getReflectionVector(normalVector, pointToLightVector);
 
-        // set up color components array (ambient, diffuse, specular)
-        Color colorComponents = this.getColorComponents(normalVector, pointToLightVector, pointToCameraVector, reflectionVector);
-
-        return new double[]{colorComponents.getR(), colorComponents.getG(), colorComponents.getB()};
+        return this.getColorComponents(normalVector, pointToLightVector, pointToCameraVector, reflectionVector);
     }
 
     /**
@@ -75,9 +73,9 @@ public class PhongShader {
     private Vector getPointToLightVector() {
         Vector pointToLightVector = new Vector();
 
-        if (this.lights.getLights().size() == 2) {
+        if (this.light instanceof ParallelLight) {
             // scene lighting is of type parallel light
-            ParallelLight parallelLight = (ParallelLight) this.lights.getLights().get(1);
+            ParallelLight parallelLight = (ParallelLight) this.light;
 
             pointToLightVector = new Vector(
                     Double.parseDouble(parallelLight.getDirection().getX()),
@@ -85,13 +83,22 @@ public class PhongShader {
                     Double.parseDouble(parallelLight.getDirection().getZ())
             );
 
-            pointToLightVector = pointToLightVector.invert();
-
             // set light color
             this.lightColor = new Color(
                     Double.parseDouble(parallelLight.getColor().getR()),
                     Double.parseDouble(parallelLight.getColor().getG()),
                     Double.parseDouble(parallelLight.getColor().getB())
+            );
+
+            pointToLightVector = pointToLightVector.invert();
+        } else if (this.light instanceof AmbientLight) {
+            AmbientLight ambientLight = (AmbientLight) this.light;
+
+            // set light color
+            this.lightColor = new Color(
+                    Double.parseDouble(ambientLight.getColor().getR()),
+                    Double.parseDouble(ambientLight.getColor().getG()),
+                    Double.parseDouble(ambientLight.getColor().getB())
             );
         }
 
@@ -162,9 +169,13 @@ public class PhongShader {
      * @return the ambient color component for r, g and b
      */
     private Color getAmbientColorComponent(Color objectColor) {
-        double materialAmbientComponent = Double.parseDouble(this.materialSolid.getPhong().getKa());
+        // only compute for ambient light
+        if (this.light instanceof AmbientLight) {
+            double materialAmbientComponent = Double.parseDouble(this.materialSolid.getPhong().getKa());
 
-        return objectColor.multiplyByFactor(materialAmbientComponent);
+            return objectColor.multiplyByFactor(materialAmbientComponent);
+        }
+        return new Color();
     }
 
     /**

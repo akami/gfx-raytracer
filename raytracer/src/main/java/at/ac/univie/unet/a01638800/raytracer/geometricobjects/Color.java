@@ -20,6 +20,14 @@ public class Color {
         this.rgbValues = new double[]{inRange(r), inRange(g), inRange(b)};
     }
 
+    public double[] getRgbValues() {
+        return rgbValues;
+    }
+
+    public void setRgbValues(double[] rgbValues) {
+        this.rgbValues = rgbValues;
+    }
+
     public double getR() {
         return this.rgbValues[0];
     }

@@ -82,6 +82,10 @@ public class Vector {
     public Vector normalize() {
         double length = this.getLength();
 
+        if(Double.compare(length, 0.0) == 0) {
+            return new Vector(this.getCoordinate());
+        }
+
         return new Vector(this.getX() / length, this.getY() / length, this.getZ() / length);
     }
 
