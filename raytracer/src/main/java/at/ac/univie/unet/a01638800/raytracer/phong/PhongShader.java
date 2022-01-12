@@ -47,15 +47,16 @@ public class PhongShader {
         Vector normalVector = this.getNormalVector();
         Vector pointToLightVector = this.getPointToLightVector();
         Vector pointToCameraVector = this.getPointToCameraVector();
+
         Vector reflectionVector = this.getReflectionVector(normalVector, pointToLightVector);
 
         // set up color components array (ambient, diffuse, specular)
         Color[] colorComponents = this.getColorComponents(normalVector, pointToLightVector, pointToCameraVector, reflectionVector);
 
         // accumulate each component red = red_ambient + red_diffuse + red_specular
-        pixelColor[0] = colorComponents[0].getR() + colorComponents[1].getR() + colorComponents[2].getR();
-        pixelColor[1] = colorComponents[0].getG() + colorComponents[1].getG() + colorComponents[2].getG();
-        pixelColor[2] = colorComponents[0].getB() + colorComponents[1].getB() + colorComponents[2].getB();
+        pixelColor[0] = colorComponents[0].getR() + colorComponents[1].getR();
+        pixelColor[1] = colorComponents[0].getG() + colorComponents[1].getG();
+        pixelColor[2] = colorComponents[0].getB() + colorComponents[1].getB();
 
         return pixelColor;
     }
@@ -157,12 +158,12 @@ public class PhongShader {
         // compute color components individually
         Color ambient = this.getAmbientColorComponent(objectColor);
         Color diffuse = this.getDiffuseColorComponent(objectColor, normalVector, pointToLightVector);
-        Color specular = this.getSpecularColorComponent(normalVector, pointToLightVector, pointToCameraVector, reflectionVector);
+        //Color specular = this.getSpecularColorComponent(normalVector, pointToLightVector, pointToCameraVector, reflectionVector);
 
         // fill color array with components
         colorComponents[0] = ambient;
         colorComponents[1] = diffuse;
-        colorComponents[2] = specular;
+        //colorComponents[2] = specular;
 
         return colorComponents;
     }
@@ -200,11 +201,10 @@ public class PhongShader {
         double materialDiffuseComponent = Double.parseDouble(this.materialSolid.getPhong().getKd());
 
         // max(0.0, n * l)
-        double diffuseFactor = Math.max(0.0, normalVector.dotProduct(pointToLightVector));
+        double diffuseFactor = Math.min(Math.max(0.0, normalVector.dotProduct(pointToLightVector)), 1.0);
 
         return objectColor
-                .multiplyByFactor(diffuseFactor)
-                .multiplyByFactor(materialDiffuseComponent);
+                .multiplyByFactor(materialDiffuseComponent * diffuseFactor);
     }
 
     /**
@@ -232,7 +232,7 @@ public class PhongShader {
         double shininess = Double.parseDouble(this.materialSolid.getPhong().getExponent());
 
         // max((r * v)^a, 0.0)
-        double specularFactor = Math.max(0.0, Math.pow(reflectionVector.dotProduct(pointToCameraVector), shininess));
+        double specularFactor = Math.min(Math.max(0.0, Math.pow(reflectionVector.dotProduct(pointToCameraVector), shininess)), 1.0);
 
         Color specular = this.lightColor
                 .multiplyByFactor(materialSpecularComponent)

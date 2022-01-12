@@ -73,22 +73,22 @@ public class Sphere extends Surface {
         Vector raySphereCenterToOrigin = rayOrigin.subtractPoint(sphereCenter);
 
         double a = rayDirection.dotProduct(rayDirection);
-        double b = 2 * rayDirection.dotProduct(raySphereCenterToOrigin);
+        double b = 2.0 * rayDirection.dotProduct(raySphereCenterToOrigin);
         double c = raySphereCenterToOrigin.dotProduct(raySphereCenterToOrigin) - sphereRadiusSquared;
 
-        double t1 = 0;
-        double t2 = 0;
+        double t1 = 0.0;
+        double t2 = 0.0;
 
         double[] solution = generalSolutionFormula(a, b, c, t1, t2);
 
         if(solution == null) {
             return null;
-        } else if(solution[0] < 0){
-            if(solution[1] >= 0) {
+        } else if(solution[0] < 0.0){
+            if(solution[1] >= 0.0) {
                 return new Intersection(rayOrigin, this.center, rayDirection, solution[1]);
             }
-        } else if(solution[1] < 0){
-            if(solution[0] >= 0) {
+        } else if(solution[1] < 0.0){
+            if(solution[0] >= 0.0) {
                 return new Intersection(rayOrigin, this.center, rayDirection, solution[0]);
             }
         } else {
@@ -102,15 +102,15 @@ public class Sphere extends Surface {
     private double[] generalSolutionFormula(double a, double b, double c, double t1, double t2) {
         double[] solution = new double[2];
 
-        double discriminant = b * b - 4 * a * c;
+        double discriminant = b * b - 4.0 * a * c;
 
-        if (discriminant < 0) { // no intersection was detected
+        if (discriminant < 0.0) { // no intersection was detected
            return null;
-        } else if (discriminant == 0) { // one intersection was detected
+        } else if (discriminant == 0.0) { // one intersection was detected
             t1 = - 0.5 * b / a;
             t2 = t1;
-        } else if (discriminant > 0 ) { // multiple intersections were detected
-            double q = (b > 0) ?
+        } else if (discriminant > 0.0 ) { // multiple intersections were detected
+            double q = (b > 0.0) ?
                     -0.5 * (b + Math.sqrt(discriminant)) :
                     -0.5 * (b - Math.sqrt(discriminant));
 
