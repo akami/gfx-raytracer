@@ -172,13 +172,13 @@ public class RaytracedScene {
                     pixelColor[1] = Double.parseDouble(this.parsedScene.getBackgroundColor().getG());
                     pixelColor[2] = Double.parseDouble(this.parsedScene.getBackgroundColor().getB());
 
-                    this.image.getRaster().setDataElements(x, y, mapColorToRgb(pixelColor));
+                    this.image.getRaster().setDataElements(x, this.sceneHeight - 1 - y, mapColorToRgb(pixelColor));
                 } else {
                     normalCoordinates[0] = intersection.getNormal().getX();
                     normalCoordinates[1] = intersection.getNormal().getY();
                     normalCoordinates[2] = intersection.getNormal().getZ();
 
-                    this.image.getRaster().setDataElements(x, y, mapCoordinatesToRgb(normalCoordinates));
+                    this.image.getRaster().setDataElements(x, this.sceneHeight - 1 - y, mapCoordinatesToRgb(normalCoordinates));
                 }
             }
         }

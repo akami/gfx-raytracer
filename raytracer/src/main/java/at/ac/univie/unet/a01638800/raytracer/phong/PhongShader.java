@@ -32,16 +32,18 @@ public class PhongShader {
         Vector pointToLightVector = this.getPointToLightVector();
         pointToLightVector.normalize();
 
-        Vector pointToCameraVector = new Vector();
+        Vector pointToCameraVector = this.intersection.getRayDirection();
+        pointToCameraVector.invert();
+        pointToCameraVector.normalize();
 
         Vector reflectionVector = normalVector.subtractVector(pointToLightVector);
         reflectionVector = reflectionVector.scaleByFactor(2.0 * normalVector.dotProduct(pointToLightVector));
 
         Color[] colorComponents = this.computeColorComponents(normalVector, pointToLightVector, pointToCameraVector, reflectionVector);
 
-        pixelColor[0] = colorComponents[0].getR() + colorComponents[1].getR();
-        pixelColor[1] = colorComponents[0].getG() + colorComponents[1].getG();
-        pixelColor[2] = colorComponents[0].getB() + colorComponents[1].getB();
+        pixelColor[0] = colorComponents[0].getR() + colorComponents[1].getR() /* + colorComponents[2].getR() */;
+        pixelColor[1] = colorComponents[0].getG() + colorComponents[1].getG() /* + colorComponents[2].getG() */;
+        pixelColor[2] = colorComponents[0].getB() + colorComponents[1].getB() /* + colorComponents[2].getB() */;
 
         return pixelColor;
     }
@@ -59,6 +61,13 @@ public class PhongShader {
                     Double.parseDouble(parallelLight.getDirection().getZ())
             );
             pointToLightVector.invert();
+
+            // set light color
+            this.lightColor = new Color(
+                    Double.parseDouble(parallelLight.getColor().getR()),
+                    Double.parseDouble(parallelLight.getColor().getG()),
+                    Double.parseDouble(parallelLight.getColor().getB())
+            );
 
         } else if (this.lights.getLights().size() > 2) {
             // TODO implement
@@ -82,8 +91,18 @@ public class PhongShader {
         Color diffuse = objectColor.multiplyByFactor(diffuseFactor);
         diffuse = diffuse.multiplyByFactor(Double.parseDouble(this.materialSolid.getPhong().getKd()));
 
+        double specularFactor = reflectionVector.dotProduct(pointToCameraVector);
+        Color specular = this.lightColor.multiplyByFactor(Double.parseDouble(this.materialSolid.getPhong().getKs()));
+        specularFactor = Math.max(0.0, specularFactor);
+        specular = specular.multiplyByFactor(Math.pow(specularFactor, Double.parseDouble(this.materialSolid.getPhong().getExponent())));
+
+        if (normalVector.dotProduct(pointToLightVector) < 0.0) {
+            specular = new Color(0.0, 0.0, 0.0);
+        }
+
         colorComponents[0] = ambient;
         colorComponents[1] = diffuse;
+        colorComponents[2] = specular;
 
         return colorComponents;
     }
