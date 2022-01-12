@@ -4,33 +4,11 @@ public class Vector {
     private Coordinate coordinate;
 
     public Vector() {
-        double[] xyzValues = new double[3];
-
-        xyzValues[0] = 0.0;
-        xyzValues[1] = 0.0;
-        xyzValues[2] = 0.0;
-
-        this.coordinate = new Coordinate(xyzValues);
+        this.coordinate = new Coordinate(new double[]{0.0, 0.0, 0.0});
     }
 
     public Vector(double x, double y, double z) {
-       double[] xyzValues = new double[3];
-
-       xyzValues[0] = x;
-       xyzValues[1] = y;
-       xyzValues[2] = z;
-
-       this.coordinate = new Coordinate(xyzValues);
-    }
-
-    public Vector(Point origin, double x, double y, double z) {
-        double[] xyzValues = new double[3];
-
-        xyzValues[0] = origin.getX() + x;
-        xyzValues[1] = origin.getY() + y;
-        xyzValues[2] = origin.getZ() + z;
-
-        this.coordinate = new Coordinate(xyzValues);
+       this.coordinate = new Coordinate(new double[]{x, y, z});
     }
 
     public Vector(Coordinate coordinate) {

@@ -4,25 +4,11 @@ public class Point {
     private Coordinate coordinate;
 
     public Point() {
-        this.coordinate = new Coordinate();
-
-        double[] xyzValues = new double[3];
-
-        xyzValues[0] = 0.;
-        xyzValues[1] = 0.;
-        xyzValues[2] = 0.;
-
-        this.coordinate.setXyzValues(xyzValues);
+        this.coordinate = new Coordinate(new double[]{0.0, 0.0, 0.0});
     }
 
     public Point(double x, double y, double z) {
-        double[] xyzValues = new double[3];
-
-        xyzValues[0] = x;
-        xyzValues[1] = y;
-        xyzValues[2] = z;
-
-        this.coordinate = new Coordinate(xyzValues);
+        this.coordinate = new Coordinate(new double[]{x, y, z});
     }
 
     public Point(Point origin, Vector direction, double t) {

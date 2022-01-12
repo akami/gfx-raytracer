@@ -4,30 +4,20 @@ package at.ac.univie.unet.a01638800.raytracer.geometricobjects;
  * Represents the color components r, g and b.
  */
 public class Color {
-    /** Array of doubles that represent the values for red, green and blue */
+    /**
+     * Array of doubles that represent the values for red, green and blue
+     */
     private double[] rgbValues;
 
     /**
      * Creates a black color object.
      */
-    public Color(){
-        double[] rgbValues = new double[3];
-
-        rgbValues[0] = 0.0;
-        rgbValues[1] = 0.0;
-        rgbValues[2] = 0.0;
-
-        this.rgbValues = rgbValues;
+    public Color() {
+        this.rgbValues = new double[]{0.0, 0.0, 0.0};
     }
 
     public Color(double r, double g, double b) {
-        double[] rgbValues = new double[3];
-
-        rgbValues[0] = r;
-        rgbValues[1] = g;
-        rgbValues[2] = b;
-
-        this.rgbValues = rgbValues;
+        this.rgbValues = new double[]{inRange(r), inRange(g), inRange(b)};
     }
 
     public double getR() {
@@ -35,7 +25,7 @@ public class Color {
     }
 
     public void setR(double r) {
-        this.rgbValues[0] = r;
+        this.rgbValues[0] = inRange(r);
     }
 
     public double getG() {
@@ -43,7 +33,7 @@ public class Color {
     }
 
     public void setG(double g) {
-        this.rgbValues[1] = g;
+        this.rgbValues[1] = inRange(g);
     }
 
     public double getB() {
@@ -51,14 +41,18 @@ public class Color {
     }
 
     public void setB(double b) {
-        this.rgbValues[2] = b;
+        this.rgbValues[2] = inRange(b);
     }
 
     public Color multiplyByFactor(double factor) {
-        return new Color(this.getR() * factor, this.getG() * factor, this.getB() * factor);
+        return new Color(inRange(this.getR() * factor), inRange(this.getG() * factor), inRange(this.getB() * factor));
     }
 
-    public Color multiplyColor(Color color) {
-        return new Color(this.getR() * color.getR(), this.getG() * color.getG(), this.getB() * color.getB());
+    public Color addColor(Color color) {
+        return new Color(inRange(this.getR() + color.getR()), inRange(this.getG() + color.getG()), inRange(this.getB() + color.getB()));
+    }
+
+    private double inRange(double value) {
+        return Math.max(Math.min(value, 1.0), 0.0);
     }
 }

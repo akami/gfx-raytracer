@@ -12,16 +12,24 @@ import at.ac.univie.unet.a01638800.raytracer.scene.Scene;
  */
 public class PhongShader {
 
-    /** The lights in the scene */
+    /**
+     * The lights in the scene
+     */
     private final Scene.Lights lights;
 
-    /** The material of the object to illuminate and shade */
+    /**
+     * The material of the object to illuminate and shade
+     */
     private final MaterialSolid materialSolid;
 
-    /** The ray-object intersection data */
+    /**
+     * The ray-object intersection data
+     */
     private final Intersection intersection;
 
-    /** The light color*/
+    /**
+     * The light color
+     */
     private Color lightColor;
 
     public PhongShader(Scene.Lights parsedLights, MaterialSolid materialSolid, Intersection intersection) {
@@ -37,39 +45,21 @@ public class PhongShader {
      *     <li> compute the color components: ambient, diffuse, specular </li>
      *     <li> accumulating the components for each color value to get final pixel color </li>
      * </ol>
+     *
      * @return rgb array of pixel color
      */
     public double[] calculatePixelColor() {
-        // set up rgb array
-        double[] pixelColor = new double[3];
-
         // set up vectors
-        Vector normalVector = this.getNormalVector();
+        Vector normalVector = this.intersection.getNormal();
         Vector pointToLightVector = this.getPointToLightVector();
         Vector pointToCameraVector = this.getPointToCameraVector();
 
         Vector reflectionVector = this.getReflectionVector(normalVector, pointToLightVector);
 
         // set up color components array (ambient, diffuse, specular)
-        Color[] colorComponents = this.getColorComponents(normalVector, pointToLightVector, pointToCameraVector, reflectionVector);
+        Color colorComponents = this.getColorComponents(normalVector, pointToLightVector, pointToCameraVector, reflectionVector);
 
-        // accumulate each component red = red_ambient + red_diffuse + red_specular
-        pixelColor[0] = colorComponents[0].getR() + colorComponents[1].getR();
-        pixelColor[1] = colorComponents[0].getG() + colorComponents[1].getG();
-        pixelColor[2] = colorComponents[0].getB() + colorComponents[1].getB();
-
-        return pixelColor;
-    }
-
-    /**
-     * Returns the normal from the intersection point.
-     */
-    private Vector getNormalVector() {
-        return new Vector(
-                this.intersection.getNormal().getX(),
-                this.intersection.getNormal().getY(),
-                this.intersection.getNormal().getZ()
-        );
+        return new double[]{colorComponents.getR(), colorComponents.getG(), colorComponents.getB()};
     }
 
     /**
@@ -122,31 +112,31 @@ public class PhongShader {
     /**
      * The reflection vector is computed by: <br><br>
      * r = 2 * (n * l) * n - l
-     * @param normalVector the normal of the intersection point
+     *
+     * @param normalVector       the normal of the intersection point
      * @param pointToLightVector the point to light vector
      * @return the normalized reflection vector
      */
     private Vector getReflectionVector(Vector normalVector, Vector pointToLightVector) {
-        Vector nlVector = normalVector.subtractVector(pointToLightVector);
         double nlScalar = normalVector.dotProduct(pointToLightVector);
 
-        Vector reflectionVector = nlVector.scaleByFactor(2.0 * nlScalar);
+        Vector reflectionVector = normalVector.scaleByFactor(2.0 * nlScalar).subtractVector(pointToLightVector);
 
         return reflectionVector.normalize();
     }
 
     /**
      * Computes the color components ambient, diffuse and specular.
-     * @param normalVector the normal from the intersection point
-     * @param pointToLightVector the vector from the intersection point to the light source
+     *
+     * @param normalVector        the normal from the intersection point
+     * @param pointToLightVector  the vector from the intersection point to the light source
      * @param pointToCameraVector the vector from the intersection point to the camera
-     * @param reflectionVector the reflection vector based on the light incident vector and normal
+     * @param reflectionVector    the reflection vector based on the light incident vector and normal
      * @return array of Color [ambient(r, g, b), diffuse(r, g, b), specular(r, g, b)]
      */
-    private Color[] getColorComponents(Vector normalVector, Vector pointToLightVector, Vector pointToCameraVector, Vector reflectionVector) {
-
+    private Color getColorComponents(Vector normalVector, Vector pointToLightVector, Vector pointToCameraVector, Vector reflectionVector) {
         // set up color array
-        Color[] colorComponents = new Color[3];
+        Color colorComponents = new Color();
 
         // get color of parsed object material
         Color objectColor = new Color(
@@ -158,14 +148,10 @@ public class PhongShader {
         // compute color components individually
         Color ambient = this.getAmbientColorComponent(objectColor);
         Color diffuse = this.getDiffuseColorComponent(objectColor, normalVector, pointToLightVector);
-        //Color specular = this.getSpecularColorComponent(normalVector, pointToLightVector, pointToCameraVector, reflectionVector);
+        Color specular = this.getSpecularColorComponent(normalVector, pointToLightVector, pointToCameraVector, reflectionVector);
 
         // fill color array with components
-        colorComponents[0] = ambient;
-        colorComponents[1] = diffuse;
-        //colorComponents[2] = specular;
-
-        return colorComponents;
+        return colorComponents.addColor(ambient).addColor(diffuse).addColor(specular);
     }
 
     /**
@@ -192,8 +178,8 @@ public class PhongShader {
      *     max(0.0, n * l)</li>
      * </ul>
      *
-     * @param objectColor object' color
-     * @param normalVector intersection normal
+     * @param objectColor        object' color
+     * @param normalVector       intersection normal
      * @param pointToLightVector vector from intersection point to light source
      * @return Color containing only the diffuse color components for r, g and b
      */
@@ -210,7 +196,7 @@ public class PhongShader {
     /**
      * Computes the specular color component given the formula: <br><br>
      * k_s * max((r * v)^a, 0.0) <br><br>,
-     *
+     * <p>
      * where:
      * <ul>
      *     <li> k_s: the material specular component given by the parsed material</li>
@@ -218,13 +204,13 @@ public class PhongShader {
      *     <li> v: point to camera vector </li>
      *     <li> a: shininess exponent </li>
      * </ul>
-     *
+     * <p>
      * Note that the specular color component is only dependent on the light color and not on the object's color.
      *
-     * @param normalVector intersection normal
-     * @param pointToLightVector vector from intersection point to light source
+     * @param normalVector        intersection normal
+     * @param pointToLightVector  vector from intersection point to light source
      * @param pointToCameraVector vector from intersection point to camera
-     * @param reflectionVector reflection vector based on incident of light onto the intersection point
+     * @param reflectionVector    reflection vector based on incident of light onto the intersection point
      * @return Color containing only specular color components for r, g and b
      */
     private Color getSpecularColorComponent(Vector normalVector, Vector pointToLightVector, Vector pointToCameraVector, Vector reflectionVector) {
