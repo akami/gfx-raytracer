@@ -3,7 +3,6 @@ package at.ac.univie.unet.a01638800.raytracer.phong;
 import at.ac.univie.unet.a01638800.raytracer.geometricobjects.Color;
 import at.ac.univie.unet.a01638800.raytracer.geometricobjects.Vector;
 import at.ac.univie.unet.a01638800.raytracer.intersection.Intersection;
-import at.ac.univie.unet.a01638800.raytracer.scene.AmbientLight;
 import at.ac.univie.unet.a01638800.raytracer.scene.Light;
 import at.ac.univie.unet.a01638800.raytracer.scene.MaterialSolid;
 import at.ac.univie.unet.a01638800.raytracer.scene.ParallelLight;
@@ -28,15 +27,25 @@ public class PhongShader {
      */
     private final Intersection intersection;
 
+    private final boolean illuminate;
+
     /**
      * The light color
      */
-    private Color lightColor;
+    private final Color lightColor;
 
-    public PhongShader(Light light, MaterialSolid materialSolid, Intersection intersection) {
+    public PhongShader(Light light, MaterialSolid materialSolid, Intersection intersection, boolean illuminate) {
         this.light = light;
         this.materialSolid = materialSolid;
         this.intersection = intersection;
+        this.illuminate = illuminate;
+
+        // set light color
+        this.lightColor = new Color(
+                Double.parseDouble(light.getColor().getR()),
+                Double.parseDouble(light.getColor().getG()),
+                Double.parseDouble(light.getColor().getB())
+        );
     }
 
     /**
@@ -83,23 +92,8 @@ public class PhongShader {
                     Double.parseDouble(parallelLight.getDirection().getZ())
             );
 
-            // set light color
-            this.lightColor = new Color(
-                    Double.parseDouble(parallelLight.getColor().getR()),
-                    Double.parseDouble(parallelLight.getColor().getG()),
-                    Double.parseDouble(parallelLight.getColor().getB())
-            );
-
             pointToLightVector = pointToLightVector.invert();
-        } else if (this.light instanceof AmbientLight) {
-            AmbientLight ambientLight = (AmbientLight) this.light;
 
-            // set light color
-            this.lightColor = new Color(
-                    Double.parseDouble(ambientLight.getColor().getR()),
-                    Double.parseDouble(ambientLight.getColor().getG()),
-                    Double.parseDouble(ambientLight.getColor().getB())
-            );
         }
 
         return pointToLightVector.normalize();
@@ -153,12 +147,14 @@ public class PhongShader {
         );
 
         // compute color components individually
-        Color ambient = this.getAmbientColorComponent(objectColor);
-        Color diffuse = this.getDiffuseColorComponent(objectColor, normalVector, pointToLightVector);
-        Color specular = this.getSpecularColorComponent(normalVector, pointToLightVector, pointToCameraVector, reflectionVector);
+        if (!illuminate) {
+            return this.getAmbientColorComponent(objectColor);
+        } else {
+            Color diffuse = this.getDiffuseColorComponent(objectColor, normalVector, pointToLightVector);
+            Color specular = this.getSpecularColorComponent(normalVector, pointToLightVector, pointToCameraVector, reflectionVector);
 
-        // fill color array with components
-        return colorComponents.addColor(ambient).addColor(diffuse).addColor(specular);
+            return colorComponents.addColor(diffuse).addColor(specular);
+        }
     }
 
     /**
@@ -169,13 +165,9 @@ public class PhongShader {
      * @return the ambient color component for r, g and b
      */
     private Color getAmbientColorComponent(Color objectColor) {
-        // only compute for ambient light
-        if (this.light instanceof AmbientLight) {
-            double materialAmbientComponent = Double.parseDouble(this.materialSolid.getPhong().getKa());
+        double materialAmbientComponent = Double.parseDouble(this.materialSolid.getPhong().getKa());
 
-            return objectColor.multiplyByFactor(materialAmbientComponent);
-        }
-        return new Color();
+        return objectColor.multiplyByFactor(materialAmbientComponent);
     }
 
     /**

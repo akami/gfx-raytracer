@@ -1,0 +1,46 @@
+package at.ac.univie.unet.a01638800.utils;
+
+public class RgbMapper {
+    /**
+     * Coordinates are ranged between -1 and 1. In order to map them to rgb values which range between
+     * 0 and 255, this is done as follows:
+     *
+     * <ol>
+     *     <li> Add 1 to all coordinates. This will result in a range from 0 to 2. </li>
+     *     <li> Divide the newly ranged coordinates by 2 in order to achieve a range from 0 to 1. </li>
+     *     <li> Multiply by 255 to get the corresponding rgb value. </li>
+     *     <li> Apply a bit-shift in order to get the TYPE_INT_RGB values. </li>
+     * </ol>
+     * @param coordinates the direction coordinate of the ray
+     * @return integer byte array with corresponding rgb values
+     */
+    public static int[] mapCoordinatesToRgb(double[] coordinates) {
+        int[] rgbValues = new int[1];
+
+        // coordinates are initially between -1 and 1
+        int r = (int)(((coordinates[0] + 1.0) / 2.0) * 255.0);
+        int g = (int)(((coordinates[1] + 1.0) / 2.0) * 255.0);
+        int b = 0; // the z value is always -1 which corresponds to 0 in rgb value
+
+        int rgb = r << 16 | g << 8 | b;
+
+        rgbValues[0] = rgb;
+
+        return rgbValues;
+    }
+
+    public static int[] mapColorToRgb(double[] color) {
+        int[] rgbValues = new int[1];
+
+        // color is initially already normalized between 0 and 1
+        int r = (int) (color[0] * 255.0);
+        int g = (int) (color[1] * 255.0);
+        int b = (int) (color[2] * 255.0);
+
+        int rgb = r << 16 | g << 8 | b;
+
+        rgbValues[0] = rgb;
+
+        return rgbValues;
+    }
+}
