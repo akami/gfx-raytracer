@@ -1,6 +1,5 @@
 package at.ac.univie.unet.a01638800.raytracer.intersection;
 
-import at.ac.univie.unet.a01638800.raytracer.geometricobjects.Normal;
 import at.ac.univie.unet.a01638800.raytracer.geometricobjects.Point;
 import at.ac.univie.unet.a01638800.raytracer.geometricobjects.Vector;
 
@@ -10,7 +9,7 @@ public class Intersection {
     private Point objectCenter;
 
     private Vector rayDirection;
-    private Normal normal;
+    private Vector normal;
 
     public Intersection() {
         // nothing here
@@ -58,16 +57,16 @@ public class Intersection {
         this.objectCenter = objectCenter;
     }
 
-    public Normal getNormal() {
+    public Vector getNormal() {
         return normal;
     }
 
-    public void setNormal(Normal normal) {
+    public void setNormal(Vector normal) {
         this.normal = normal;
     }
 
-    private Normal computeNormal() {
+    private Vector computeNormal() {
         Vector normalVector = this.intersectionPoint.subtractPoint(this.objectCenter);
-        return new Normal(normalVector);
+        return normalVector.normalize();
     }
 }

@@ -1,8 +1,15 @@
 package at.ac.univie.unet.a01638800.raytracer.geometricobjects;
 
+/**
+ * Represents the color components r, g and b.
+ */
 public class Color {
+    /** Array of doubles that represent the values for red, green and blue */
     private double[] rgbValues;
 
+    /**
+     * Creates a black color object.
+     */
     public Color(){
         double[] rgbValues = new double[3];
 

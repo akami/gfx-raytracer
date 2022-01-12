@@ -89,10 +89,6 @@ public class Vector {
         return (this.getX() * vector.getX() + this.getY() * vector.getY() + this.getZ() * vector.getZ());
     }
 
-    public double dotProduct(Normal normal) {
-        return (this.getX() * normal.getX() + this.getY() * normal.getY() + this.getZ() * normal.getZ());
-    }
-
     public Vector crossProduct(Vector vector) {
         double x = this.getY() * vector.getZ() - this.getZ() * vector.getY();
         double y = this.getZ() * vector.getX() - this.getX() * vector.getZ();
