@@ -30,11 +30,11 @@ public class PhongShader {
         );
 
         Vector pointToLightVector = this.getPointToLightVector();
-        pointToLightVector.normalize();
+        pointToLightVector = pointToLightVector.normalize();
 
         Vector pointToCameraVector = this.intersection.getRayDirection();
-        pointToCameraVector.invert();
-        pointToCameraVector.normalize();
+        pointToCameraVector = pointToCameraVector.invert();
+        pointToCameraVector = pointToCameraVector.normalize();
 
         Vector reflectionVector = normalVector.subtractVector(pointToLightVector);
         reflectionVector = reflectionVector.scaleByFactor(2.0 * normalVector.dotProduct(pointToLightVector));
@@ -60,7 +60,7 @@ public class PhongShader {
                     Double.parseDouble(parallelLight.getDirection().getY()),
                     Double.parseDouble(parallelLight.getDirection().getZ())
             );
-            pointToLightVector.invert();
+            pointToLightVector = pointToLightVector.invert();
 
             // set light color
             this.lightColor = new Color(

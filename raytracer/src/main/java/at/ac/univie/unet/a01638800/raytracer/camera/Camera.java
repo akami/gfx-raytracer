@@ -65,7 +65,7 @@ public class Camera {
                 this.mapCoordinateToImagePlane(direction.getCoordinate());
                 this.includeFOVAndImageDimensions(direction.getCoordinate());
 
-                direction.normalize();
+                direction = direction.normalize();
 
                 this.rays[x][y].setDirection(direction);
                 this.rays[x][y].setOrigin(this.cameraPosition);

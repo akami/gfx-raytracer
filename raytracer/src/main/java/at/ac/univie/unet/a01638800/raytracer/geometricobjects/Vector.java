@@ -101,18 +101,14 @@ public class Vector {
         return new Vector(x, y, z);
     }
 
-    public void invert() {
-        this.coordinate.getXyzValues()[0] = -this.getX();
-        this.coordinate.getXyzValues()[1] = -this.getY();
-        this.coordinate.getXyzValues()[2] = -this.getZ();
+    public Vector invert() {
+        return new Vector(-this.getX(), -this.getY(), -this.getZ());
     }
 
-    public void normalize() {
+    public Vector normalize() {
         double length = this.getLength();
 
-        this.coordinate.getXyzValues()[0] = this.getX() / length;
-        this.coordinate.getXyzValues()[1] = this.getY() / length;
-        this.coordinate.getXyzValues()[2] = this.getZ() / length;
+        return new Vector(this.getX() / length, this.getY() / length, this.getZ() / length);
     }
 
     private double getLength() {

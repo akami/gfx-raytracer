@@ -9,7 +9,7 @@ public class Normal {
 
     public Normal(Vector vector) {
         Vector normal = new Vector(vector.getX(), vector.getY(), vector.getZ());
-        normal.normalize();
+        normal = normal.normalize();
 
         double[] xyzValues = new double[3];
 

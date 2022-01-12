@@ -70,16 +70,4 @@ public class Point {
     public Vector addPoint(Point point) {
         return new Vector(this.getX() + point.getX(), this.getY() + point.getY(), this.getZ() + point.getZ());
     }
-
-    public void normalize() {
-        double length = this.getLength();
-
-        this.coordinate.getXyzValues()[0] = this.getX() / length;
-        this.coordinate.getXyzValues()[1] = this.getY() / length;
-        this.coordinate.getXyzValues()[2] = this.getZ() / length;
-    }
-
-    private double getLength() {
-        return Math.sqrt((this.getX() * this.getX() + this.getY() * this.getY() + this.getZ() * this.getZ()));
-    }
 }
