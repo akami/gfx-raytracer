@@ -69,3 +69,5 @@
  - on almighty:
  -- hoecknerk96/Public/gfx_ws21_a01638800/lab3a/
  -- java -jar raytracer.jar input/example3.xml
+ 
+ -- or same as locally
