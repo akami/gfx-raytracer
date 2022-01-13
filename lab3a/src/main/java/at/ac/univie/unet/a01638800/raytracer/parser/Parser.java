@@ -30,13 +30,17 @@ public class Parser {
     private final Marshaller marshaller;
 
     /**
-     * Sets up the SAXParserFactory in order to load an external dtd file and generate classes out of it. TODO
+     * Sets up the SAXParserFactory in order to load an external dtd file and generate classes out of it.
      *
      * @throws ParserException
      */
     private Parser() throws ParserException {
         try {
-            // setup of SAX to disable DTD validation
+
+            /*
+            * Set up SAX to disable dtd validation. This was done in case no scene.dtd file as referenced by the xml
+            * file is given.
+            */
             SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
             saxParserFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
 
@@ -86,6 +90,9 @@ public class Parser {
      */
     public File parseSceneToFile(Scene scene, DebugMode debugMode) throws ParserException {
         try {
+            File directory = new File("./output");
+            directory.mkdirs();
+
             File file = new File("./output/" + scene.getOutputFile());
 
             RaytracedScene raytracedScene = new RaytracedScene(scene, debugMode);

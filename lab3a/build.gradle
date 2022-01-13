@@ -9,7 +9,18 @@ version '1.0.0'
 
 def packageName = 'at.ac.univie.unet.a01638800.raytracer'
 
-mainClassName = packageName + '.Main'
+jar {
+    manifest {
+        attributes "Main-Class": packageName + '.Main'
+    }
+
+    from {
+        exclude '**/module-info.class'
+        duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
 
 xjc {
     defaultPackage.set(packageName + '.scene')

@@ -167,7 +167,7 @@ public class PhongShader {
      * the ParallelLight, the ambient component does not have to be computed again.
      */
     private Color getAmbientColorComponent(Color objectColor) {
-        // only compute for ambient light TODO
+        // only compute for ambient light
         if (!illuminate) {
             double materialAmbientComponent = Double.parseDouble(this.materialSolid.getPhong().getKa());
 

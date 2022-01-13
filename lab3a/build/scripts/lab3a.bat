@@ -71,7 +71,7 @@ set CLASSPATH=%APP_HOME%\lib\lab3a-1.0.0.jar;%APP_HOME%\lib\jakarta.xml.bind-api
 
 
 @rem Execute lab3a
-"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %LAB3A_OPTS%  -classpath "%CLASSPATH%" at.ac.univie.unet.a01638800.raytracer.Main %*
+"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %LAB3A_OPTS%  -classpath "%CLASSPATH%"  %*
 
 :end
 @rem End local scope for the variables with windows NT shell
