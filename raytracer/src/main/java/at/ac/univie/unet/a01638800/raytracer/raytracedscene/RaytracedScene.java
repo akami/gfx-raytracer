@@ -9,8 +9,8 @@ import at.ac.univie.unet.a01638800.raytracer.phong.PhongShader;
 import at.ac.univie.unet.a01638800.raytracer.scene.*;
 import at.ac.univie.unet.a01638800.raytracer.surfaces.Sphere;
 import at.ac.univie.unet.a01638800.utils.RgbMapper;
+import at.ac.univie.unet.a01638800.raytracer.geometricobjects.Color;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 
 public class RaytracedScene {
@@ -78,39 +78,57 @@ public class RaytracedScene {
     }
 
     private void calculatePixelsNoDebugMode() {
+
         // iterate through image dimensions
         for (int x = 0; x < this.sceneWidth; x++) {
             for (int y = 0; y < this.sceneHeight; y++) {
-                Intersection intersection = null;
-                at.ac.univie.unet.a01638800.raytracer.geometricobjects.Color pixelColor = new at.ac.univie.unet.a01638800.raytracer.geometricobjects.Color();
+
+                // for every pixel, check camera ray intersection, shadow ray intersection and calculate pixel color
+                Intersection cameraRayIntersection = null;
+                Intersection shadowRayIntersection = null;
+                Color pixelColor = new Color();
 
                 // check for intersections with every surface
                 for (Sphere sphere : this.spheres) {
-                    intersection = sphere.intersectionDetected(this.camera.getRays()[x][y]);
+                    cameraRayIntersection = sphere.intersectionDetected(this.camera.getRays()[x][y]);
 
-                    if (intersection != null) {
+                    // camera ray intersection returns an intersection
+                    if (cameraRayIntersection != null) {
+
+                        // illuminate object for every light
                         for (Light light : this.parsedScene.getLights().getLights()) {
-                            if (light instanceof ParallelLight) {
-                                Intersection shadowIntersection = this.checkForShadow(intersection, light);
 
-                                if (shadowIntersection == null) {
-                                    // calculate pixel color for each light
-                                    PhongShader shader = new PhongShader(light, sphere.getParsedSphere().getMaterialSolid(), intersection, true);
-                                    pixelColor = pixelColor.addColor(shader.calculatePixelColor());
-                                    
-                                    break;
-                                }
-                            } else if (light instanceof AmbientLight) {
-                                // calculate pixel color illumination for each light
-                                PhongShader shader = new PhongShader(light, sphere.getParsedSphere().getMaterialSolid(), intersection, false);
+                            // ambient light
+                            if (light instanceof  AmbientLight) {
+
+                                // Phong shader without illumination (only ambient)
+                                PhongShader shader = new PhongShader(light, sphere.getParsedSphere().getMaterialSolid(), cameraRayIntersection, false);
+
                                 pixelColor = pixelColor.addColor(shader.calculatePixelColor());
+
+                               // directional light
+                            } else if (light instanceof ParallelLight) {
+
+                                // check for shadow
+                               shadowRayIntersection = this.checkForShadow(cameraRayIntersection, (ParallelLight) light);
+
+                                // no shadow was detected
+                                if (shadowRayIntersection == null) {
+
+                                    // calculate pixel color for each light with illumination (diffuse + specular)
+                                    PhongShader shader = new PhongShader(light, sphere.getParsedSphere().getMaterialSolid(), cameraRayIntersection, true);
+
+                                    pixelColor = pixelColor.addColor(shader.calculatePixelColor());
+
+                                    break;
+                                } // else ignore
                             }
                         }
                         break;
                     }
                 }
 
-                if (intersection == null) {
+                if (cameraRayIntersection == null) {
                     // set pixel color to background color
                     pixelColor.setR(Double.parseDouble(this.parsedScene.getBackgroundColor().getR()));
                     pixelColor.setG(Double.parseDouble(this.parsedScene.getBackgroundColor().getG()));
@@ -122,17 +140,16 @@ public class RaytracedScene {
         }
     }
 
-    private Intersection checkForShadow(Intersection cameraRayIntersection, Light lightSource) {
-        ParallelLight parallelLight = (ParallelLight) lightSource;
+    private Intersection checkForShadow(Intersection cameraRayIntersection, ParallelLight parallelLight) {
         Intersection shadowIntersection = null;
-
         Ray shadowRay = new Ray();
-        shadowRay.setOrigin(cameraRayIntersection.getIntersectionPoint().addVector(cameraRayIntersection.getRayDirection().scaleByFactor(0.00000001)));
+
+        shadowRay.setOrigin(cameraRayIntersection.getIntersectionPoint());
         shadowRay.setDirection(new Vector(
                 Double.parseDouble(parallelLight.getDirection().getX()),
                 Double.parseDouble(parallelLight.getDirection().getY()),
                 Double.parseDouble(parallelLight.getDirection().getZ())
-        ).invert());
+        ).invert().normalize());
 
         for (Sphere sphere : this.spheres) {
             shadowIntersection = sphere.intersectionDetected(shadowRay);
@@ -192,7 +209,7 @@ public class RaytracedScene {
                     if (intersection == null) {
                         this.image.getRaster().setDataElements(x, this.sceneHeight - 1 - y, RgbMapper.mapCoordinatesToRgb(coordinates));
                     } else {
-                        this.image.setRGB(x, this.sceneHeight - 1 - y, Color.WHITE.getRGB());
+                        this.image.setRGB(x, this.sceneHeight - 1 - y, java.awt.Color.WHITE.getRGB());
                     }
                 }
             }

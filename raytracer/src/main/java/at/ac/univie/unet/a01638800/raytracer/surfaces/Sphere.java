@@ -6,6 +6,7 @@ import at.ac.univie.unet.a01638800.raytracer.geometricobjects.Vector;
 import at.ac.univie.unet.a01638800.raytracer.intersection.Intersection;
 
 public class Sphere extends Surface {
+    private static final double EPSILON_OFFSET = 0.00000001;
     private at.ac.univie.unet.a01638800.raytracer.scene.Sphere parsedSphere;
     private Point center;
     private double radius;
@@ -83,12 +84,12 @@ public class Sphere extends Surface {
 
         if(solution == null) {
             return null;
-        } else if(solution[0] < 0.0){
-            if(solution[1] >= 0.0) {
+        } else if(solution[0] < EPSILON_OFFSET){
+            if(solution[1] >= EPSILON_OFFSET) {
                 return new Intersection(rayOrigin, this.center, rayDirection, solution[1]);
             }
-        } else if(solution[1] < 0.0){
-            if(solution[0] >= 0.0) {
+        } else if(solution[1] < EPSILON_OFFSET){
+            if(solution[0] >= EPSILON_OFFSET) {
                 return new Intersection(rayOrigin, this.center, rayDirection, solution[0]);
             }
         } else {
