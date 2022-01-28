@@ -56,7 +56,7 @@
     @see raytracer/src/main/java/at/ac/univie/unet/a01638800/raytracer/parser/Parser.java
     @see raytracer/build/classes
 
--- Instead of writing classes for each xml element, the generated classes are ready to use in the application
+-- Instead of writing classes for each xml element, the .xml classes are ready to use in the application
 
  _____________________________________
  | ------------ HOW TO ------------- |

@@ -2,7 +2,7 @@
 <!DOCTYPE scene SYSTEM "scene.dtd">
 
 <scene output_file="example9.png">
-    <background_color r="0.0" g="0.0" b="0.0"/>
+    <background_color b="0.0" g="0.0" r="0.0"/>
 
     <!-- Camera -->
     <camera>
@@ -17,14 +17,14 @@
     <!-- Lights -->
     <lights>
         <ambient_light>
-            <color r="1.0" g="1.0" b="1.0"/>
+            <color b="1.0" g="1.0" r="1.0"/>
         </ambient_light>
         <point_light>
-            <color r="0.7" g="0.7" b="0.7"/>
+            <color b="0.7" g="0.7" r="0.7"/>
             <position x="2.0" y="10.0" z="-2.5"/>
         </point_light>
         <point_light>
-            <color r="0.7" g="0.7" b="0.7"/>
+            <color b="0.7" g="0.7" r="0.7"/>
             <position x="-2.0" y="10.0" z="-2.5"/>
         </point_light>
     </lights>
@@ -35,8 +35,8 @@
         <!-- First Box -->
         <mesh name="box.obj">
             <material_solid>
-                <color r="1.0" g="1.0" b="1.0"/>
-                <phong ka="0.3" kd="0.9" ks="1.0" exponent="20"/>
+                <color b="1.0" g="1.0" r="1.0"/>
+                <phong exponent="20" ka="0.3" kd="0.9" ks="1.0"/>
                 <reflectance r="0"/>
                 <transmittance t="0"/>
                 <refraction iof="0"/>
@@ -51,8 +51,8 @@
         <!-- Second Box -->
         <mesh name="box.obj">
             <material_solid>
-                <color r="1.0" g="1.0" b="1.0"/>
-                <phong ka="0.3" kd="0.9" ks="1.0" exponent="20"/>
+                <color b="1.0" g="1.0" r="1.0"/>
+                <phong exponent="20" ka="0.3" kd="0.9" ks="1.0"/>
                 <reflectance r="0"/>
                 <transmittance t="0"/>
                 <refraction iof="0"/>
@@ -67,8 +67,8 @@
         <!-- Third Box -->
         <mesh name="box.obj">
             <material_solid>
-                <color r="1.0" g="1.0" b="1.0"/>
-                <phong ka="0.3" kd="0.9" ks="1.0" exponent="20"/>
+                <color b="1.0" g="1.0" r="1.0"/>
+                <phong exponent="20" ka="0.3" kd="0.9" ks="1.0"/>
                 <reflectance r="1.0"/>
                 <transmittance t="0"/>
                 <refraction iof="2.3"/>
@@ -83,8 +83,8 @@
         <!-- Fourth Box -->
         <mesh name="box.obj">
             <material_solid>
-                <color r="1.0" g="1.0" b="1.0"/>
-                <phong ka="0.3" kd="0.9" ks="1.0" exponent="20"/>
+                <color b="1.0" g="1.0" r="1.0"/>
+                <phong exponent="20" ka="0.3" kd="0.9" ks="1.0"/>
                 <reflectance r="1.0"/>
                 <transmittance t="0"/>
                 <refraction iof="2.3"/>
@@ -99,8 +99,8 @@
         <!-- Cylinder -->
         <mesh name="cylinder.obj">
             <material_solid>
-                <color r="1.0" g="1.0" b="1.0"/>
-                <phong ka="0.3" kd="0.9" ks="1.0" exponent="20"/>
+                <color b="1.0" g="1.0" r="1.0"/>
+                <phong exponent="20" ka="0.3" kd="0.9" ks="1.0"/>
                 <reflectance r="0"/>
                 <transmittance t="0"/>
                 <refraction iof="0"/>
@@ -110,13 +110,12 @@
                 <scale x="0.8" y="5.0" z="0.8"/>
             </transform>
         </mesh>
-	
 
         <!-- Floor -->
         <mesh name="plane_small.obj">
             <material_textured>
                 <texture name="mramor6x6.png"/>
-                <phong ka="0.3" kd="0.9" ks="1.0" exponent="200"/>
+                <phong exponent="200" ka="0.3" kd="0.9" ks="1.0"/>
                 <reflectance r="0"/>
                 <transmittance t="0"/>
                 <refraction iof="0"/>
@@ -132,7 +131,7 @@
         <mesh name="plane_small.obj">
             <material_textured>
                 <texture name="Brick.png"/>
-                <phong ka="0.3" kd="0.9" ks="1.0" exponent="200"/>
+                <phong exponent="200" ka="0.3" kd="0.9" ks="1.0"/>
                 <reflectance r="0"/>
                 <transmittance t="0"/>
                 <refraction iof="0"/>
@@ -147,8 +146,8 @@
         <sphere radius="1.0">
             <position x="0" y="0" z="0"/>
             <material_solid>
-                <color r="0.18" g="0.5" b="0.17"/>
-                <phong ka="0.3" kd="0.9" ks="1.0" exponent="200"/>
+                <color b="0.17" g="0.5" r="0.18"/>
+                <phong exponent="200" ka="0.3" kd="0.9" ks="1.0"/>
                 <reflectance r="0"/>
                 <transmittance t="0.8"/>
                 <refraction iof="2.3"/>
@@ -164,8 +163,8 @@
         <sphere radius="1.0">
             <position x="0" y="0" z="0"/>
             <material_solid>
-                <color r="0.18" g="0.5" b="0.17"/>
-                <phong ka="0.3" kd="0.9" ks="1.0" exponent="200"/>
+                <color b="0.17" g="0.5" r="0.18"/>
+                <phong exponent="200" ka="0.3" kd="0.9" ks="1.0"/>
                 <reflectance r="0"/>
                 <transmittance t="0.8"/>
                 <refraction iof="2.3"/>
@@ -181,8 +180,8 @@
         <sphere radius="1.0">
             <position x="0" y="0" z="0"/>
             <material_solid>
-                <color r="0.17" g="0.18" b="0.5"/>
-                <phong ka="0.3" kd="0.9" ks="1.0" exponent="200"/>
+                <color b="0.5" g="0.18" r="0.17"/>
+                <phong exponent="200" ka="0.3" kd="0.9" ks="1.0"/>
                 <reflectance r="0.8"/>
                 <transmittance t="0.0"/>
                 <refraction iof="2.3"/>
@@ -198,8 +197,8 @@
         <sphere radius="1.0">
             <position x="0" y="0" z="0"/>
             <material_solid>
-                <color r="0.17" g="0.18" b="0.5"/>
-                <phong ka="0.3" kd="0.9" ks="1.0" exponent="200"/>
+                <color b="0.5" g="0.18" r="0.17"/>
+                <phong exponent="200" ka="0.3" kd="0.9" ks="1.0"/>
                 <reflectance r="0.8"/>
                 <transmittance t="0.0"/>
                 <refraction iof="2.3"/>
@@ -215,8 +214,8 @@
         <sphere radius="1.0">
             <position x="0" y="0" z="0"/>
             <material_solid>
-                <color r="0.2" g="0.2" b="0.2"/>
-                <phong ka="0.3" kd="0.9" ks="1.0" exponent="200"/>
+                <color b="0.2" g="0.2" r="0.2"/>
+                <phong exponent="200" ka="0.3" kd="0.9" ks="1.0"/>
                 <reflectance r="0.3"/>
                 <transmittance t="0.7"/>
                 <refraction iof="1.5"/>

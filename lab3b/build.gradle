@@ -1,0 +1,42 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.bjornvester.xjc' version '1.6.0'
+}
+
+group 'at.ac.univie.a01638800'
+version '1.0.0'
+
+def packageName = 'at.ac.univie.unet.a01638800.raytracer'
+
+mainClassName = packageName + '.Main'
+
+jar {
+    manifest {
+        attributes "Main-Class": mainClassName
+    }
+
+    from {
+        exclude '**/module-info.class'
+        duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+xjc {
+    defaultPackage.set(packageName + '.xml.scene')
+
+    bindingFiles = xsdDir.asFileTree.matching { include("**/*.xjb") }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'javax.xml.bind:jaxb-api:2.3.1'
+    implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.1'
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+    implementation 'org.apache.commons:commons-collections4:4.4'
+}
