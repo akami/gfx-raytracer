@@ -6,6 +6,7 @@ import at.ac.univie.unet.a01638800.raytracer.geometry.Ray;
 import at.ac.univie.unet.a01638800.raytracer.geometry.Vector;
 import at.ac.univie.unet.a01638800.raytracer.scene.camera.Camera;
 import at.ac.univie.unet.a01638800.raytracer.scene.intersection.Intersection;
+import at.ac.univie.unet.a01638800.raytracer.scene.phong.IlluminationMode;
 import at.ac.univie.unet.a01638800.raytracer.scene.phong.PhongShader;
 import at.ac.univie.unet.a01638800.raytracer.scene.surfaces.Surface;
 import at.ac.univie.unet.a01638800.raytracer.xml.scene.*;
@@ -137,7 +138,7 @@ public class Scene {
                             if (light instanceof XmlAmbientLight) {
 
                                 // Phong shader without illumination (only ambient)
-                                final PhongShader shader = new PhongShader(light, surface.getXmlSurface().getMaterialSolid(), cameraRayIntersection, false);
+                                final PhongShader shader = new PhongShader(light, surface.getXmlSurface().getMaterialSolid(), cameraRayIntersection, IlluminationMode.AMBIENT);
 
                                 pixelColor = pixelColor.addColor(shader.calculatePixelColor());
 
@@ -151,7 +152,7 @@ public class Scene {
                                 if (shadowRayIntersection == null) {
 
                                     // calculate pixel color for each light with illumination (diffuse + specular)
-                                    final PhongShader shader = new PhongShader(light, surface.getXmlSurface().getMaterialSolid(), cameraRayIntersection, true);
+                                    final PhongShader shader = new PhongShader(light, surface.getXmlSurface().getMaterialSolid(), cameraRayIntersection, IlluminationMode.PARALLEL);
 
                                     pixelColor = pixelColor.addColor(shader.calculatePixelColor());
 
@@ -166,7 +167,7 @@ public class Scene {
                                 if (shadowRayIntersection == null) {
 
                                     // calculate pixel color for each light with illumination (diffuse + specular)
-                                    final PhongShader shader = new PhongShader(light, surface.getXmlSurface().getMaterialSolid(), cameraRayIntersection, true);
+                                    final PhongShader shader = new PhongShader(light, surface.getXmlSurface().getMaterialSolid(), cameraRayIntersection, IlluminationMode.SPOT);
 
                                     pixelColor = pixelColor.addColor(shader.calculatePixelColor());
 
@@ -190,6 +191,7 @@ public class Scene {
         }
     }
 
+    // TODO make class with generic type for light
     private Intersection checkForShadow(final Intersection cameraRayIntersection, final XmlLight light) {
         Intersection shadowIntersection = null;
         final Ray shadowRay = new Ray();

@@ -27,14 +27,14 @@ public class PhongShader {
      */
     private final Intersection intersection;
 
-    private final boolean illuminate;
+    private final IlluminationMode illuminate;
 
     /**
      * The light color
      */
     private final Color lightColor;
 
-    public PhongShader(final XmlLight light, final XmlMaterialSolid materialSolid, final Intersection intersection, final boolean illuminate) {
+    public PhongShader(final XmlLight light, final XmlMaterialSolid materialSolid, final Intersection intersection, IlluminationMode illuminate) {
         this.light = light;
         this.materialSolid = materialSolid;
         this.intersection = intersection;
@@ -168,7 +168,7 @@ public class PhongShader {
      */
     private Color getAmbientColorComponent(final Color objectColor) {
         // only compute for ambient light
-        if (!illuminate) {
+        if (illuminate == IlluminationMode.AMBIENT) {
             final double materialAmbientComponent = Double.parseDouble(materialSolid.getPhong().getKa());
 
             return objectColor.multiplyByFactor(materialAmbientComponent);

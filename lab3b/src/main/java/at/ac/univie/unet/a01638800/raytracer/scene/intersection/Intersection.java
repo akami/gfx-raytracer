@@ -87,5 +87,4 @@ public class Intersection {
         final Vector normalVector = intersectionPoint.subtractPoint(objectCenter);
         return normalVector.normalize();
     }
-
 }

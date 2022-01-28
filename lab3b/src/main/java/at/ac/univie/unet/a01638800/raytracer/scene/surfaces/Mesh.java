@@ -51,9 +51,10 @@ public class Mesh extends Surface {
         Point rayOrigin = ray.getOrigin();
         Vector rayDirection = ray.getDirection();
 
-        Point vertexPosition1 = face.getVertices()[0].getPosition();
-        Point vertexPosition2 = face.getVertices()[1].getPosition();
-        Point vertexPosition3 = face.getVertices()[2].getPosition();
+        Point vertexPosition0 = face.getVertices()[0].getPosition();
+        Point vertexPosition1 = face.getVertices()[1].getPosition();
+        Point vertexPosition2 = face.getVertices()[2].getPosition();
+
 
         // distance to intersection
         double t = 0;
@@ -63,38 +64,43 @@ public class Mesh extends Surface {
         double b = 0;
 
         // set up system variables
-        Vector e1 = vertexPosition2.subtractPoint(vertexPosition1);
-        Vector e2 = vertexPosition3.subtractPoint(vertexPosition1);
+        Vector e1 = vertexPosition1.subtractPoint(vertexPosition0);
+        Vector e2 = vertexPosition2.subtractPoint(vertexPosition0);
+
         Vector pVector = rayDirection.crossProduct(e2);
+
         double det = e1.dotProduct(pVector);
 
         // if determinant is negative or close to zero, triangle is backfacing or ray misses triangle
-        if (!(det < EPSILON_OFFSET)) {
-            double inverseDet = 1D / det;
+        if (det > -EPSILON_OFFSET && det < EPSILON_OFFSET) {
+            return null;
+        }
 
-            // calculate weight a
-            Vector tVector = rayOrigin.subtractPoint(vertexPosition1);
-            a = tVector.dotProduct(pVector) * inverseDet;
+        double inverseDet = 1D / det;
 
-            if (a < 0 || a > 1) {
-                return null;
-            }
+        // calculate weight a
+        Vector tVector = rayOrigin.subtractPoint(vertexPosition0);
+        a = tVector.dotProduct(pVector) * inverseDet;
 
-            // calculate weight b
-            Vector qVector = tVector.crossProduct(e1);
-            b = rayDirection.dotProduct(qVector) * inverseDet;
+        if (a < 0D || a > 1D) {
+            return null;
+        }
 
-            if (b < 0 || a + b > 1) {
-                return null;
-            }
+        // calculate weight b
+        Vector qVector = tVector.crossProduct(e1);
+        b = rayDirection.dotProduct(qVector) * inverseDet;
 
-            t = e2.dotProduct(qVector) * inverseDet;
-            if (t > 0) {
-                Intersection intersection = new Intersection(rayOrigin, null, rayDirection, t);
-                intersection.setNormal(face.getVertices()[0].getNormal());
+        if (b < 0D || a + b > 1D) {
+            return null;
+        }
 
-                return intersection;
-            }
+        t = e2.dotProduct(qVector) * inverseDet;
+
+        if (t > EPSILON_OFFSET) {
+            Intersection intersection = new Intersection(rayOrigin, null, rayDirection, t);
+            intersection.setNormal(face.getVertices()[0].getNormal());
+
+            return intersection;
         }
 
         return null;
