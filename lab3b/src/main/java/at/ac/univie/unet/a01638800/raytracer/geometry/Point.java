@@ -80,4 +80,10 @@ public class Point {
         return new Vector(getX() + point.getX(), getY() + point.getY(), getZ() + point.getZ());
     }
 
+    /**
+     * Returns the distance between this point and another point
+     */
+    public double getDistanceTo(final Point point) {
+        return this.subtractPoint(point).getLength();
+    }
 }

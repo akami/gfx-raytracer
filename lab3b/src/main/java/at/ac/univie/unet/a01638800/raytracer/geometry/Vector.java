@@ -120,8 +120,7 @@ public class Vector {
     /**
      * Returns the magnitude or length of this vector.
      */
-    private double getLength() {
+    public double getLength() {
         return Math.sqrt((getX() * getX() + getY() * getY() + getZ() * getZ()));
     }
-
 }

@@ -2,12 +2,12 @@ package at.ac.univie.unet.a01638800.raytracer.scene;
 
 import at.ac.univie.unet.a01638800.raytracer.DebugMode;
 import at.ac.univie.unet.a01638800.raytracer.geometry.Color;
-import at.ac.univie.unet.a01638800.raytracer.geometry.Ray;
-import at.ac.univie.unet.a01638800.raytracer.geometry.Vector;
+import at.ac.univie.unet.a01638800.raytracer.geometry.Point;
 import at.ac.univie.unet.a01638800.raytracer.scene.camera.Camera;
 import at.ac.univie.unet.a01638800.raytracer.scene.intersection.Intersection;
 import at.ac.univie.unet.a01638800.raytracer.scene.phong.IlluminationMode;
 import at.ac.univie.unet.a01638800.raytracer.scene.phong.PhongShader;
+import at.ac.univie.unet.a01638800.raytracer.scene.phong.Shadow;
 import at.ac.univie.unet.a01638800.raytracer.scene.surfaces.Surface;
 import at.ac.univie.unet.a01638800.raytracer.xml.scene.*;
 import at.ac.univie.unet.a01638800.utils.RgbMapper;
@@ -33,10 +33,13 @@ public class Scene {
 
     private final DebugMode debugMode;
 
+    private final Shadow shadow;
+
     public Scene(final XmlScene scene, final Surface[] surfaces, final DebugMode debugMode) {
         this.scene = scene;
         this.surfaces = surfaces;
         this.debugMode = debugMode;
+        this.shadow = new Shadow(surfaces);
 
         // setup camera
         camera = new Camera(scene.getCamera());
@@ -146,7 +149,7 @@ public class Scene {
                             } else if (light instanceof XmlParallelLight) {
 
                                 // check for shadow
-                                shadowRayIntersection = checkForShadow(cameraRayIntersection, (XmlParallelLight) light);
+                                shadowRayIntersection = this.shadow.checkForShadow(cameraRayIntersection, light);
 
                                 // no shadow was detected
                                 if (shadowRayIntersection == null) {
@@ -156,22 +159,19 @@ public class Scene {
 
                                     pixelColor = pixelColor.addColor(shader.calculatePixelColor());
 
-                                    break;
                                 } // else ignore
-                            } else if (light instanceof XmlSpotLight) {
+                            } else if (light instanceof XmlPointLight) {
 
                                 // check for shadow
-                                shadowRayIntersection = checkForShadow(cameraRayIntersection, (XmlSpotLight) light);
+                                shadowRayIntersection = this.shadow.checkForShadow(cameraRayIntersection, light);
 
                                 // no shadow was detected
                                 if (shadowRayIntersection == null) {
 
                                     // calculate pixel color for each light with illumination (diffuse + specular)
-                                    final PhongShader shader = new PhongShader(light, surface.getXmlSurface().getMaterialSolid(), cameraRayIntersection, IlluminationMode.SPOT);
+                                    final PhongShader shader = new PhongShader(light, surface.getXmlSurface().getMaterialSolid(), cameraRayIntersection, IlluminationMode.POINT);
 
                                     pixelColor = pixelColor.addColor(shader.calculatePixelColor());
-
-                                    break;
                                 }
                             }
                         }
@@ -189,43 +189,6 @@ public class Scene {
                 image.getRaster().setDataElements(x, sceneHeight - 1 - y, RgbMapper.mapColorToRgb(pixelColor.getRgbValues()));
             }
         }
-    }
-
-    // TODO make class with generic type for light
-    private Intersection checkForShadow(final Intersection cameraRayIntersection, final XmlLight light) {
-        Intersection shadowIntersection = null;
-        final Ray shadowRay = new Ray();
-
-        shadowRay.setOrigin(cameraRayIntersection.getIntersectionPoint());
-
-        if (light instanceof XmlParallelLight) {
-           XmlParallelLight directionalLight = (XmlParallelLight) light;
-
-            shadowRay.setDirection(new Vector(
-                    Double.parseDouble(directionalLight.getDirection().getX()),
-                    Double.parseDouble(directionalLight.getDirection().getY()),
-                    Double.parseDouble(directionalLight.getDirection().getZ())
-            ).invert().normalize());
-
-        } else if (light instanceof XmlSpotLight) {
-            XmlSpotLight directionalLight = (XmlSpotLight) light;
-
-            shadowRay.setDirection(new Vector(
-                    Double.parseDouble(directionalLight.getDirection().getX()),
-                    Double.parseDouble(directionalLight.getDirection().getY()),
-                    Double.parseDouble(directionalLight.getDirection().getZ())
-            ).invert().normalize());
-        }
-
-        for (final Surface surface : surfaces) {
-            shadowIntersection = surface.intersectionDetected(shadowRay);
-
-            if (shadowIntersection != null) {
-                break;
-            }
-        }
-
-        return shadowIntersection;
     }
 
     private void calculatePixelsNoLightDebugMode() {

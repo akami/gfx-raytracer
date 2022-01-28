@@ -1,11 +1,13 @@
 package at.ac.univie.unet.a01638800.raytracer.scene.phong;
 
 import at.ac.univie.unet.a01638800.raytracer.geometry.Color;
+import at.ac.univie.unet.a01638800.raytracer.geometry.Point;
 import at.ac.univie.unet.a01638800.raytracer.geometry.Vector;
 import at.ac.univie.unet.a01638800.raytracer.scene.intersection.Intersection;
 import at.ac.univie.unet.a01638800.raytracer.xml.scene.XmlLight;
 import at.ac.univie.unet.a01638800.raytracer.xml.scene.XmlMaterialSolid;
 import at.ac.univie.unet.a01638800.raytracer.xml.scene.XmlParallelLight;
+import at.ac.univie.unet.a01638800.raytracer.xml.scene.XmlPointLight;
 
 /**
  * This class implements the phong illumination and shading model used in the raytraced scene.
@@ -77,12 +79,14 @@ public class PhongShader {
      *     or direction.</li>
      *     <li>Parallel light: a distant light source with a color and a direction. The point to light vector is given
      *     by the inverse light direction of the source.</li>
+     *     <li>Point Light: a light source with a position that emits light in all directions. The point to light vector
+     *     is given by the vector from the intersection point to the light position. </li>
      * </ul>
      */
     private Vector getPointToLightVector() {
         Vector pointToLightVector = new Vector();
 
-        if (light instanceof XmlParallelLight) {
+        if (illuminate == IlluminationMode.PARALLEL) {
             // scene lighting is of type parallel light
             final XmlParallelLight parallelLight = (XmlParallelLight) light;
 
@@ -94,6 +98,17 @@ public class PhongShader {
 
             pointToLightVector = pointToLightVector.invert();
 
+        } else if (illuminate == IlluminationMode.POINT) {
+            // scene lighting is of type point light
+            final XmlPointLight pointLight = (XmlPointLight) light;
+
+            Point pointLightPosition = new Point(
+                    Double.parseDouble(pointLight.getPosition().getX()),
+                    Double.parseDouble(pointLight.getPosition().getY()),
+                    Double.parseDouble(pointLight.getPosition().getZ())
+            );
+
+            pointToLightVector = pointLightPosition.subtractPoint(intersection.getIntersectionPoint());
         }
 
         return pointToLightVector.normalize();
@@ -161,10 +176,10 @@ public class PhongShader {
      *
      * @param objectColor the object's color
      * @return the ambient color component for r, g and b
-     *         <p>
-     *         Note that the ambient component is only calculated if the pixel should not be illuminated by the diffuse and
-     *         specular components. This happens when the given light is of type AmbientLight, for directional lights such as
-     *         the ParallelLight, the ambient component does not have to be computed again.
+     * <p>
+     * Note that the ambient component is only calculated if the pixel should not be illuminated by the diffuse and
+     * specular components. This happens when the given light is of type AmbientLight, for directional lights such as
+     * the ParallelLight, the ambient component does not have to be computed again.
      */
     private Color getAmbientColorComponent(final Color objectColor) {
         // only compute for ambient light
@@ -199,7 +214,8 @@ public class PhongShader {
         final double diffuseFactor = Math.min(Math.max(0.0, normalVector.dotProduct(pointToLightVector)), 1.0);
 
         return objectColor
-                .multiplyByFactor(materialDiffuseComponent * diffuseFactor);
+                .multiplyByFactor(materialDiffuseComponent)
+                .multiplyByFactor(diffuseFactor);
     }
 
     /**
