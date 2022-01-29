@@ -108,7 +108,8 @@ public class Sphere extends Surface {
 
         final double discriminant = b * b - 4.0 * a * c;
 
-        if (discriminant < 0.0) { // no intersection was detected
+        // no intersection was detected
+        if (discriminant < 0.0) {
             return null;
         } else if (discriminant == 0.0) { // one intersection was detected
             t1 = -0.5 * b / a;

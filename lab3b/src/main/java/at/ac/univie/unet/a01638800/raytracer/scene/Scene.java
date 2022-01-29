@@ -81,7 +81,7 @@ public class Scene {
             for (int y = 0; y < sceneHeight; y++) {
 
                 // bounce is at the beginning zero
-                Color pixelColor = this.raytracer.traceRay(camera.getRays()[x][y], 0);
+                Color pixelColor = this.raytracer.traceRay(camera.getRays()[x][y], 1);
 
                 image.getRaster().setDataElements(x, sceneHeight - 1 - y, RgbMapper.mapColorToRgb(pixelColor.getRgbValues()));
             }

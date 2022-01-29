@@ -1,6 +1,7 @@
 package at.ac.univie.unet.a01638800.raytracer.scene;
 
 import at.ac.univie.unet.a01638800.raytracer.geometry.Color;
+import at.ac.univie.unet.a01638800.raytracer.geometry.Point;
 import at.ac.univie.unet.a01638800.raytracer.geometry.Ray;
 import at.ac.univie.unet.a01638800.raytracer.geometry.Vector;
 import at.ac.univie.unet.a01638800.raytracer.scene.intersection.Intersection;
@@ -36,38 +37,14 @@ public class Raytracer {
         Intersection cameraRayIntersection = null;
 
         Color color = new Color();
-        Color reflectedColor = new Color();
-        Color refractedColor = new Color();
-
-        double reflectance = 0D;
-        double transmittance = 0D;
 
         // check for intersections with every surface
         for (final Surface surface : surfaces) {
             cameraRayIntersection = surface.intersectionDetected(ray);
-            reflectance = Double.parseDouble(surface.getXmlSurface().getMaterialSolid().getReflectance().getR());
-            transmittance = Double.parseDouble(surface.getXmlSurface().getMaterialSolid().getTransmittance().getT());
 
             // camera ray intersection returns an intersection
             if (cameraRayIntersection != null) {
-                color = this.illuminate(surface, cameraRayIntersection);
-
-                // max bounces reached
-                if (bounce > this.maxBounces) {
-                    return color;
-                }
-
-                // check surface reflectance
-                if (reflectance > 0D) {
-                    Ray reflectedRay = this.getReflectedRay(ray, cameraRayIntersection);
-                    reflectedColor = traceRay(reflectedRay, bounce + 1).multiplyByFactor(reflectance);
-                }
-
-                // check surface transmittance
-                if (transmittance > 0D) {
-                    Ray refractedRay = this.getRefractedRay();
-                    refractedColor = traceRay(refractedRay, bounce + 1);
-                }
+                color = this.illuminate(surface, cameraRayIntersection, bounce);
 
                 break;
             }
@@ -78,69 +55,109 @@ public class Raytracer {
             color = this.backgroundColor;
         }
 
-        return color.multiplyByFactor(1 - reflectance - transmittance).addColor(reflectedColor).addColor(refractedColor);
+        return color;
     }
 
-    private Color illuminate(Surface surface, Intersection cameraRayIntersection) {
-        Intersection shadowRayIntersection;
+    private Color illuminate(Surface surface, Intersection cameraRayIntersection, int bounce) {
+        double reflectance = Double.parseDouble(surface.getXmlSurface().getMaterialSolid().getReflectance().getR());
+        double transmittance = Double.parseDouble(surface.getXmlSurface().getMaterialSolid().getTransmittance().getT());
+
         Color color = new Color();
+        Color reflectedColor = new Color();
+        Color refractedColor = new Color();
 
         // illuminate object for every light
         for (final XmlLight light : scene.getLights().getLights()) {
-
             // ambient light
             if (light instanceof XmlAmbientLight) {
-
                 // Phong shader without illumination (only ambient)
-                final PhongShader shader = new PhongShader(light, surface.getXmlSurface().getMaterialSolid(), cameraRayIntersection, IlluminationMode.AMBIENT);
-
-                color = color.addColor(shader.calculatePixelColor());
+                color = illuminateWithAmbientLight(surface, cameraRayIntersection, (XmlAmbientLight) light, color);
 
                 // directional light
             } else if (light instanceof XmlParallelLight) {
+                // illuminate (diffuse + specular)
+                color = illuminateWithParallelLight(surface, cameraRayIntersection, (XmlParallelLight) light, color);
 
-                // check for shadow
-                shadowRayIntersection = this.shadow.checkForShadow(cameraRayIntersection, light);
-
-                // no shadow was detected
-                if (shadowRayIntersection == null) {
-
-                    // calculate pixel color for each light with illumination (diffuse + specular)
-                    final PhongShader shader = new PhongShader(light, surface.getXmlSurface().getMaterialSolid(), cameraRayIntersection, IlluminationMode.PARALLEL);
-
-                    color = color.addColor(shader.calculatePixelColor());
-
-                } // else ignore
             } else if (light instanceof XmlPointLight) {
-
-                // check for shadow
-                shadowRayIntersection = this.shadow.checkForShadow(cameraRayIntersection, light);
-
-                // no shadow was detected
-                if (shadowRayIntersection == null) {
-
-                    // calculate pixel color for each light with illumination (diffuse + specular)
-                    final PhongShader shader = new PhongShader(light, surface.getXmlSurface().getMaterialSolid(), cameraRayIntersection, IlluminationMode.POINT);
-
-                    color = color.addColor(shader.calculatePixelColor());
-                }
+                // illuminate (diffuse + specular + reflectance)
+                color = illuminateWithPointLight(surface, cameraRayIntersection, (XmlPointLight) light, color);
             }
         }
+
+        // max bounces reached
+        if (bounce > this.maxBounces) {
+            return color;
+        }
+
+        // check surface reflectance
+        if (reflectance > 0D) {
+            Ray reflectedRay = this.getReflectedRay(cameraRayIntersection);
+            reflectedColor = traceRay(reflectedRay, bounce + 1).multiplyByFactor(reflectance);
+        }
+
+        // check surface transmittance
+        if (transmittance > 0D) {
+            Ray refractedRay = this.getRefractedRay();
+            refractedColor = traceRay(refractedRay, bounce + 1).multiplyByFactor(transmittance);
+        }
+
+        return color.multiplyByFactor(1 - reflectance - transmittance).addColor(reflectedColor).addColor(refractedColor);
+    }
+
+    private Color illuminateWithAmbientLight(Surface surface, Intersection cameraRayIntersection, XmlAmbientLight light, Color color) {
+        final PhongShader shader = new PhongShader(light, surface.getXmlSurface().getMaterialSolid(), cameraRayIntersection, IlluminationMode.AMBIENT);
+
+        return color.addColor(shader.calculatePixelColor());
+    }
+
+    private Color illuminateWithParallelLight(Surface surface, Intersection cameraRayIntersection, XmlParallelLight light, Color color) {
+
+        // check for shadow
+        Intersection shadowRayIntersection = this.shadow.checkForShadow(cameraRayIntersection, light);
+
+        // no shadow was detected
+        if (shadowRayIntersection == null) {
+
+            // calculate pixel color for each light with illumination (diffuse + specular)
+            final PhongShader shader = new PhongShader(light, surface.getXmlSurface().getMaterialSolid(), cameraRayIntersection, IlluminationMode.PARALLEL);
+
+            color = color.addColor(shader.calculatePixelColor());
+
+        } // else ignore
 
         return color;
     }
 
-    private Ray getReflectedRay(Ray incidentRay, Intersection intersection) {
-        Vector lVector = incidentRay.getDirection().normalize();
-        Vector nVector = intersection.getNormal();
+    private Color illuminateWithPointLight(Surface surface, Intersection cameraRayIntersection, XmlPointLight light, Color color) {
+        // check for shadow
+        Intersection shadowRayIntersection = this.shadow.checkForShadow(cameraRayIntersection, light);
 
-        Vector rVector = nVector.scaleByFactor(2.0 * (lVector.invert()).dotProduct(nVector)).addVector(lVector);
+        // no shadow was detected
+        if (shadowRayIntersection == null) {
+            // calculate pixel color for each light with illumination (diffuse + specular)
+            final PhongShader shader = new PhongShader(light, surface.getXmlSurface().getMaterialSolid(), cameraRayIntersection, IlluminationMode.POINT);
+
+            color = color.addColor(shader.calculatePixelColor());
+
+        } // else ignore
+
+        return color;
+    }
+
+    private Ray getReflectedRay(Intersection cameraRayIntersection) {
+        Point intersectionPoint = cameraRayIntersection.getIntersectionPoint();;
+
+        // point to light vector
+        Vector lVector = cameraRayIntersection.getRayDirection().invert();
+        Vector nVector = cameraRayIntersection.getNormal();
+
+        Vector rVector = nVector.scaleByFactor(2 * (lVector).dotProduct(nVector)).subtractVector(lVector);
 
         Ray reflectedRay = new Ray();
-        reflectedRay.setOrigin(intersection.getIntersectionPoint());
+        reflectedRay.setOrigin(intersectionPoint);
         reflectedRay.setDirection(rVector.normalize());
 
-        return new Ray();
+        return reflectedRay;
     }
 
     private Ray getRefractedRay() {

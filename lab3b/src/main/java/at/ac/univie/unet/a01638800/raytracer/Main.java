@@ -12,7 +12,6 @@ import at.ac.univie.unet.a01638800.raytracer.writer.ImageWriterException;
 import at.ac.univie.unet.a01638800.raytracer.xml.scene.XmlMesh;
 import at.ac.univie.unet.a01638800.raytracer.xml.scene.XmlScene;
 import at.ac.univie.unet.a01638800.raytracer.xml.scene.XmlSphere;
-import org.apache.commons.collections4.CollectionUtils;
 
 import java.io.File;
 import java.nio.file.Path;
