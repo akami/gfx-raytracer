@@ -59,10 +59,12 @@ public class Raytracer {
     }
 
     private Color illuminate(Surface surface, Intersection cameraRayIntersection, int bounce) {
+        Color color = new Color();
+
         double reflectance = Double.parseDouble(surface.getXmlSurface().getMaterialSolid().getReflectance().getR());
         double transmittance = Double.parseDouble(surface.getXmlSurface().getMaterialSolid().getTransmittance().getT());
+        double refraction = Double.parseDouble(surface.getXmlSurface().getMaterialSolid().getRefraction().getIof());
 
-        Color color = new Color();
         Color reflectedColor = new Color();
         Color refractedColor = new Color();
 
@@ -97,7 +99,7 @@ public class Raytracer {
 
         // check surface transmittance
         if (transmittance > 0D) {
-            Ray refractedRay = this.getRefractedRay();
+            Ray refractedRay = this.getRefractedRay(cameraRayIntersection, refraction);
             refractedColor = traceRay(refractedRay, bounce + 1).multiplyByFactor(transmittance);
         }
 
@@ -147,10 +149,13 @@ public class Raytracer {
     private Ray getReflectedRay(Intersection cameraRayIntersection) {
         Point intersectionPoint = cameraRayIntersection.getIntersectionPoint();;
 
-        // point to light vector
+        // incident vector (inverted)
         Vector lVector = cameraRayIntersection.getRayDirection().invert();
+
+        // intersection normal
         Vector nVector = cameraRayIntersection.getNormal();
 
+        // reflection vector
         Vector rVector = nVector.scaleByFactor(2 * (lVector).dotProduct(nVector)).subtractVector(lVector);
 
         Ray reflectedRay = new Ray();
@@ -160,9 +165,44 @@ public class Raytracer {
         return reflectedRay;
     }
 
-    private Ray getRefractedRay() {
-        // TODO implement
+    private Ray getRefractedRay(Intersection cameraRayIntersection, double refraction) {
+        Point intersectionPoint = cameraRayIntersection.getIntersectionPoint();
 
-        return new Ray();
+        // incident ray direction pointing towards surface
+        Vector incidentVector = cameraRayIntersection.getRayDirection();
+        Vector intersectionNormal = cameraRayIntersection.getNormal();
+
+        double enterMedium = 1D;
+        double leavingMedium = refraction;
+
+        double theta = incidentVector.dotProduct(intersectionNormal);
+
+        if (theta < 0D) {
+            // the ray hits from the outside, we must flip the angle
+            theta = -theta;
+
+        } else { // ray hits from inside
+            // normal direction is reversed and needs to be flipped
+            intersectionNormal = intersectionNormal.invert();
+
+            // enter/leaving media need to be swapped
+            enterMedium = refraction;
+            leavingMedium = 1D;
+        }
+
+        double scalingFactor1 = enterMedium/leavingMedium;
+        Vector a = incidentVector.addVector(intersectionNormal.scaleByFactor(theta));
+        a = a.scaleByFactor(scalingFactor1);
+
+        double scalingFactor2 = Math.sqrt(1 - (scalingFactor1 * scalingFactor1) * (1 - (theta * theta)));
+        Vector b = intersectionNormal.scaleByFactor(scalingFactor2);
+
+        Vector refractionDirection = a.subtractVector(b).normalize();
+
+        Ray refractedRay = new Ray();
+        refractedRay.setOrigin(intersectionPoint);
+        refractedRay.setDirection(refractionDirection);
+
+        return refractedRay;
     }
 }
