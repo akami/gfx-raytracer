@@ -2,6 +2,7 @@ package at.ac.univie.unet.a01638800.raytracer.scene;
 
 import at.ac.univie.unet.a01638800.raytracer.geometry.Color;
 import at.ac.univie.unet.a01638800.raytracer.geometry.Ray;
+import at.ac.univie.unet.a01638800.raytracer.geometry.Vector;
 import at.ac.univie.unet.a01638800.raytracer.scene.intersection.Intersection;
 import at.ac.univie.unet.a01638800.raytracer.scene.phong.IlluminationMode;
 import at.ac.univie.unet.a01638800.raytracer.scene.phong.PhongShader;
@@ -58,7 +59,7 @@ public class Raytracer {
 
                 // check surface reflectance
                 if (reflectance > 0D) {
-                    Ray reflectedRay = this.getReflectedRay();
+                    Ray reflectedRay = this.getReflectedRay(ray, cameraRayIntersection);
                     reflectedColor = traceRay(reflectedRay, bounce + 1).multiplyByFactor(reflectance);
                 }
 
@@ -129,8 +130,15 @@ public class Raytracer {
         return color;
     }
 
-    private Ray getReflectedRay() {
-        // TODO implement
+    private Ray getReflectedRay(Ray incidentRay, Intersection intersection) {
+        Vector lVector = incidentRay.getDirection().normalize();
+        Vector nVector = intersection.getNormal();
+
+        Vector rVector = nVector.scaleByFactor(2.0 * (lVector.invert()).dotProduct(nVector)).addVector(lVector);
+
+        Ray reflectedRay = new Ray();
+        reflectedRay.setOrigin(intersection.getIntersectionPoint());
+        reflectedRay.setDirection(rVector.normalize());
 
         return new Ray();
     }

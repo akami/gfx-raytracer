@@ -97,7 +97,6 @@ public class PhongShader {
             );
 
             pointToLightVector = pointToLightVector.invert();
-
         } else if (illuminate == IlluminationMode.POINT) {
             // scene lighting is of type point light
             final XmlPointLight pointLight = (XmlPointLight) light;
@@ -186,7 +185,7 @@ public class PhongShader {
         if (illuminate == IlluminationMode.AMBIENT) {
             final double materialAmbientComponent = Double.parseDouble(materialSolid.getPhong().getKa());
 
-            return objectColor.multiplyByFactor(materialAmbientComponent);
+            return objectColor.multiplyByColor(lightColor).multiplyByFactor(materialAmbientComponent);
         }
         return new Color();
     }
@@ -214,6 +213,7 @@ public class PhongShader {
         final double diffuseFactor = Math.min(Math.max(0.0, normalVector.dotProduct(pointToLightVector)), 1.0);
 
         return objectColor
+                .multiplyByColor(lightColor)
                 .multiplyByFactor(materialDiffuseComponent)
                 .multiplyByFactor(diffuseFactor);
     }

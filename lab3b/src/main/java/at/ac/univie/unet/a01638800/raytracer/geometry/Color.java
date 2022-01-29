@@ -61,6 +61,10 @@ public class Color {
         return new Color(inRange(getR() + color.getR()), inRange(getG() + color.getG()), inRange(getB() + color.getB()));
     }
 
+    public Color multiplyByColor(final Color color) {
+        return new Color(inRange(getR() * color.getR()), inRange(getG() * color.getG()), inRange(getB() * color.getB()));
+    }
+
     private double inRange(final double value) {
         return Math.max(Math.min(value, 1.0), 0.0);
     }
