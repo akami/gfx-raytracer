@@ -1,5 +1,6 @@
 package at.ac.univie.unet.a01638800.raytracer.scene.surfaces;
 
+import at.ac.univie.unet.a01638800.raytracer.geometry.Color;
 import at.ac.univie.unet.a01638800.raytracer.geometry.Point;
 import at.ac.univie.unet.a01638800.raytracer.geometry.Ray;
 import at.ac.univie.unet.a01638800.raytracer.geometry.Vector;
@@ -15,7 +16,7 @@ public class Sphere extends Surface {
     /**
      * Acne-Bias offset.
      */
-    private static final double EPSILON_OFFSET = 0.00000001;
+    private static final double EPSILON_OFFSET = 0.0000001;
 
     private Point center;
     private double radius;
@@ -129,4 +130,14 @@ public class Sphere extends Surface {
         return solution;
     }
 
+    @Override
+    public Color getColor(Intersection intersection) {
+        Vector d = intersection.getIntersectionPoint().subtractPoint(this.center);
+
+        // texture coordinates of intersection point
+        double u = 0.5 + ((Math.atan2(d.getX(), d.getZ())) / (2 * Math.PI));
+        double v = 0.5 - (Math.asin(d.getY()) / Math.PI);
+
+        return this.getMaterial().getColor(u, v);
+    }
 }

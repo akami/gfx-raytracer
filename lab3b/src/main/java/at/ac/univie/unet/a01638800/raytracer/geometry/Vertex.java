@@ -1,5 +1,6 @@
 package at.ac.univie.unet.a01638800.raytracer.geometry;
 
+// TODO documentation
 public class Vertex {
 
     private final Point position;

@@ -2,6 +2,7 @@ package at.ac.univie.unet.a01638800.raytracer.scene.intersection;
 
 import at.ac.univie.unet.a01638800.raytracer.geometry.Point;
 import at.ac.univie.unet.a01638800.raytracer.geometry.Vector;
+import at.ac.univie.unet.a01638800.raytracer.scene.surfaces.Face;
 
 /**
  * Stores all data that was obtained while completing an intersection test.
@@ -15,7 +16,11 @@ public class Intersection {
     private Vector rayDirection;
     private Vector normal;
 
+    private Face face;
+
     private double t;
+    private double barycentricWeightA;
+    private double barycentricWeightB;
 
     public Intersection() {
         // nothing here
@@ -81,6 +86,30 @@ public class Intersection {
 
     public void setT(double t) {
         this.t = t;
+    }
+
+    public double getBarycentricWeightA() {
+        return barycentricWeightA;
+    }
+
+    public void setBarycentricWeightA(double barycentricWeightA) {
+        this.barycentricWeightA = barycentricWeightA;
+    }
+
+    public double getBarycentricWeightB() {
+        return barycentricWeightB;
+    }
+
+    public void setBarycentricWeightB(double barycentricWeightB) {
+        this.barycentricWeightB = barycentricWeightB;
+    }
+
+    public Face getFace() {
+        return face;
+    }
+
+    public void setFace(Face face) {
+        this.face = face;
     }
 
     private Vector computeNormal() {

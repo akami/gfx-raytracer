@@ -11,6 +11,7 @@ import at.ac.univie.unet.a01638800.raytracer.scene.phong.Shadow;
 import at.ac.univie.unet.a01638800.raytracer.scene.surfaces.Surface;
 import at.ac.univie.unet.a01638800.raytracer.xml.scene.*;
 
+// TODO documentation
 public class Raytracer {
     private final XmlScene scene;
     private final Surface[] surfaces;
@@ -35,7 +36,6 @@ public class Raytracer {
 
     public Color traceRay(Ray ray, int bounce) {
         Intersection cameraRayIntersection = null;
-
         Color color = new Color();
 
         // check for intersections with every surface
@@ -61,9 +61,9 @@ public class Raytracer {
     private Color illuminate(Surface surface, Intersection cameraRayIntersection, int bounce) {
         Color color = new Color();
 
-        double reflectance = Double.parseDouble(surface.getXmlSurface().getMaterialSolid().getReflectance().getR());
-        double transmittance = Double.parseDouble(surface.getXmlSurface().getMaterialSolid().getTransmittance().getT());
-        double refraction = Double.parseDouble(surface.getXmlSurface().getMaterialSolid().getRefraction().getIof());
+        double reflectance = surface.getMaterial().getReflectance();
+        double transmittance = surface.getMaterial().getTransmittance();
+        double refraction = surface.getMaterial().getRefraction();
 
         Color reflectedColor = new Color();
         Color refractedColor = new Color();
@@ -107,7 +107,7 @@ public class Raytracer {
     }
 
     private Color illuminateWithAmbientLight(Surface surface, Intersection cameraRayIntersection, XmlAmbientLight light, Color color) {
-        final PhongShader shader = new PhongShader(light, surface.getXmlSurface().getMaterialSolid(), cameraRayIntersection, IlluminationMode.AMBIENT);
+        final PhongShader shader = new PhongShader(light, surface, cameraRayIntersection, IlluminationMode.AMBIENT);
 
         return color.addColor(shader.calculatePixelColor());
     }
@@ -121,7 +121,7 @@ public class Raytracer {
         if (shadowRayIntersection == null) {
 
             // calculate pixel color for each light with illumination (diffuse + specular)
-            final PhongShader shader = new PhongShader(light, surface.getXmlSurface().getMaterialSolid(), cameraRayIntersection, IlluminationMode.PARALLEL);
+            final PhongShader shader = new PhongShader(light, surface, cameraRayIntersection, IlluminationMode.PARALLEL);
 
             color = color.addColor(shader.calculatePixelColor());
 
@@ -137,7 +137,7 @@ public class Raytracer {
         // no shadow was detected
         if (shadowRayIntersection == null) {
             // calculate pixel color for each light with illumination (diffuse + specular)
-            final PhongShader shader = new PhongShader(light, surface.getXmlSurface().getMaterialSolid(), cameraRayIntersection, IlluminationMode.POINT);
+            final PhongShader shader = new PhongShader(light, surface, cameraRayIntersection, IlluminationMode.POINT);
 
             color = color.addColor(shader.calculatePixelColor());
 
@@ -147,7 +147,7 @@ public class Raytracer {
     }
 
     private Ray getReflectedRay(Intersection cameraRayIntersection) {
-        Point intersectionPoint = cameraRayIntersection.getIntersectionPoint();;
+        Point intersectionPoint = cameraRayIntersection.getIntersectionPoint();
 
         // incident vector (inverted)
         Vector lVector = cameraRayIntersection.getRayDirection().invert();
@@ -190,11 +190,17 @@ public class Raytracer {
             leavingMedium = 1D;
         }
 
-        double scalingFactor1 = enterMedium/leavingMedium;
+        double scalingFactor1 = enterMedium / leavingMedium;
         Vector a = incidentVector.addVector(intersectionNormal.scaleByFactor(theta));
         a = a.scaleByFactor(scalingFactor1);
 
         double scalingFactor2 = Math.sqrt(1 - (scalingFactor1 * scalingFactor1) * (1 - (theta * theta)));
+
+//        // handle case of total internal reflection
+//        if (Double.isNaN(scalingFactor2)) {
+//            return this.getReflectedRay(cameraRayIntersection);
+//        }
+
         Vector b = intersectionNormal.scaleByFactor(scalingFactor2);
 
         Vector refractionDirection = a.subtractVector(b).normalize();

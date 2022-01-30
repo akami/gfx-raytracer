@@ -19,6 +19,7 @@ import java.awt.image.BufferedImage;
  * Represents the raytraced scene. In this class, the actual raytracing algorithm is implemented.
  * <p>
  * TODO replace surface.getXmlSurface() with custom material/texture class
+ * TODO documentation update
  */
 public class Scene {
     private final Camera camera;
@@ -80,7 +81,7 @@ public class Scene {
         for (int x = 0; x < sceneWidth; x++) {
             for (int y = 0; y < sceneHeight; y++) {
 
-                // bounce is at the beginning zero
+                // bounce is at the beginning one
                 Color pixelColor = this.raytracer.traceRay(camera.getRays()[x][y], 1);
 
                 image.getRaster().setDataElements(x, sceneHeight - 1 - y, RgbMapper.mapColorToRgb(pixelColor.getRgbValues()));

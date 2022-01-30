@@ -1,16 +1,15 @@
 package at.ac.univie.unet.a01638800.raytracer.scene.surfaces;
 
-import at.ac.univie.unet.a01638800.raytracer.geometry.Point;
-import at.ac.univie.unet.a01638800.raytracer.geometry.Ray;
-import at.ac.univie.unet.a01638800.raytracer.geometry.Vector;
+import at.ac.univie.unet.a01638800.raytracer.geometry.*;
 import at.ac.univie.unet.a01638800.raytracer.scene.intersection.Intersection;
 import at.ac.univie.unet.a01638800.raytracer.xml.scene.XmlSurface;
 
+// TODO documentation
 public class Mesh extends Surface {
     /**
      * Acne-Bias offset.
      */
-    private static final double EPSILON_OFFSET = 0.00000001;
+    private static final double EPSILON_OFFSET = 0.0000001;
 
     private final Face[] faces;
 
@@ -55,13 +54,12 @@ public class Mesh extends Surface {
         Point vertexPosition1 = face.getVertices()[1].getPosition();
         Point vertexPosition2 = face.getVertices()[2].getPosition();
 
-
         // distance to intersection
         double t = 0;
 
         // barycentric coordinate weights
-        double a = 0;
-        double b = 0;
+        double barycentricWeightA = 0D;
+        double barycentricWeightB = 0D;
 
         // set up system variables
         Vector e1 = vertexPosition1.subtractPoint(vertexPosition0);
@@ -71,7 +69,7 @@ public class Mesh extends Surface {
 
         double det = e1.dotProduct(pVector);
 
-        // if determinant is negative or close to zero, triangle is backfacing or ray misses triangle
+        // if determinant is negative or close to zero, triangle is back facing or ray misses triangle
         if (det > -EPSILON_OFFSET && det < EPSILON_OFFSET) {
             return null;
         }
@@ -80,17 +78,17 @@ public class Mesh extends Surface {
 
         // calculate weight a
         Vector tVector = rayOrigin.subtractPoint(vertexPosition0);
-        a = tVector.dotProduct(pVector) * inverseDet;
+        barycentricWeightA = tVector.dotProduct(pVector) * inverseDet;
 
-        if (a < 0D || a > 1D) {
+        if (barycentricWeightA < 0D || barycentricWeightA > 1D) {
             return null;
         }
 
         // calculate weight b
         Vector qVector = tVector.crossProduct(e1);
-        b = rayDirection.dotProduct(qVector) * inverseDet;
+        barycentricWeightB = rayDirection.dotProduct(qVector) * inverseDet;
 
-        if (b < 0D || a + b > 1D) {
+        if (barycentricWeightB < 0D || barycentricWeightA + barycentricWeightB > 1D) {
             return null;
         }
 
@@ -99,10 +97,39 @@ public class Mesh extends Surface {
         if (t > EPSILON_OFFSET) {
             Intersection intersection = new Intersection(rayOrigin, null, rayDirection, t);
             intersection.setNormal(face.getVertices()[0].getNormal());
+            intersection.setFace(face);
+            intersection.setBarycentricWeightA(barycentricWeightA);
+            intersection.setBarycentricWeightB(barycentricWeightB);
 
             return intersection;
         }
 
         return null;
+    }
+
+    @Override
+    public Color getColor(Intersection intersection) {
+        Vertex[] vertices = intersection.getFace().getVertices();
+
+        Point texture0 = vertices[0].getTexture();
+        Point texture1 = vertices[1].getTexture();
+        Point texture2 = vertices[2].getTexture();
+
+        double barycentricWeightA = intersection.getBarycentricWeightA();
+        double barycentricWeightB = intersection.getBarycentricWeightB();
+
+        double u = (1 - barycentricWeightA - barycentricWeightB) * texture0.getX()
+                + barycentricWeightA * texture1.getX()
+                + barycentricWeightB * texture2.getX();
+
+        double v = (1 - barycentricWeightA - barycentricWeightB) * texture0.getY()
+                + barycentricWeightA * texture1.getY()
+                + barycentricWeightB * texture2.getY();
+
+        if (u < 0 || u > 1 || v < 0 || v > 1) {
+            System.out.println("!");
+        }
+
+        return this.getMaterial().getColor(u, v);
     }
 }

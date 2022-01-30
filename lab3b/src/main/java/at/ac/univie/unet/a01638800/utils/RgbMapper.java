@@ -52,4 +52,11 @@ public class RgbMapper {
         return rgbValues;
     }
 
+    public static double[] mapRgbToColor(int rgb) {
+        int r = (rgb & 0x00ff0000) >> 16;
+        int g = (rgb & 0x0000ff00) >> 8;
+        int b = (rgb & 0x000000ff);
+
+        return new double[]{r / 255.0, g / 255.0, b / 255.0};
+    }
 }

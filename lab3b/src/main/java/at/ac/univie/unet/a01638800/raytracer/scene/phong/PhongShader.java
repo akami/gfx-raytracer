@@ -4,8 +4,8 @@ import at.ac.univie.unet.a01638800.raytracer.geometry.Color;
 import at.ac.univie.unet.a01638800.raytracer.geometry.Point;
 import at.ac.univie.unet.a01638800.raytracer.geometry.Vector;
 import at.ac.univie.unet.a01638800.raytracer.scene.intersection.Intersection;
+import at.ac.univie.unet.a01638800.raytracer.scene.surfaces.Surface;
 import at.ac.univie.unet.a01638800.raytracer.xml.scene.XmlLight;
-import at.ac.univie.unet.a01638800.raytracer.xml.scene.XmlMaterialSolid;
 import at.ac.univie.unet.a01638800.raytracer.xml.scene.XmlParallelLight;
 import at.ac.univie.unet.a01638800.raytracer.xml.scene.XmlPointLight;
 
@@ -20,9 +20,9 @@ public class PhongShader {
     private final XmlLight light;
 
     /**
-     * The material of the object to illuminate and shade
+     * The surface to illuminate and shade
      */
-    private final XmlMaterialSolid materialSolid;
+    private final Surface surface;
 
     /**
      * The ray-object intersection data
@@ -36,9 +36,9 @@ public class PhongShader {
      */
     private final Color lightColor;
 
-    public PhongShader(final XmlLight light, final XmlMaterialSolid materialSolid, final Intersection intersection, IlluminationMode illuminate) {
+    public PhongShader(final XmlLight light, final Surface surface, final Intersection intersection, IlluminationMode illuminate) {
         this.light = light;
-        this.materialSolid = materialSolid;
+        this.surface = surface;
         this.intersection = intersection;
         this.illuminate = illuminate;
 
@@ -152,13 +152,7 @@ public class PhongShader {
     private Color getColorComponents(final Vector normalVector, final Vector pointToLightVector, final Vector pointToCameraVector, final Vector reflectionVector) {
         // set up color array
         final Color colorComponents = new Color();
-
-        // get color of parsed object material
-        final Color objectColor = new Color(
-                Double.parseDouble(materialSolid.getColor().getR()),
-                Double.parseDouble(materialSolid.getColor().getG()),
-                Double.parseDouble(materialSolid.getColor().getB())
-        );
+        Color objectColor = this.surface.getColor(this.intersection);
 
         // compute color components individually
         final Color ambient = getAmbientColorComponent(objectColor);
@@ -183,10 +177,9 @@ public class PhongShader {
     private Color getAmbientColorComponent(final Color objectColor) {
         // only compute for ambient light
         if (illuminate == IlluminationMode.AMBIENT) {
-            final double materialAmbientComponent = Double.parseDouble(materialSolid.getPhong().getKa());
-
-            return objectColor.multiplyByColor(lightColor).multiplyByFactor(materialAmbientComponent);
+            return objectColor.multiplyByColor(lightColor).multiplyByFactor(this.surface.getMaterial().getAmbientComponent());
         }
+
         return new Color();
     }
 
@@ -207,14 +200,12 @@ public class PhongShader {
      * @return Color containing only the diffuse color components for r, g and b
      */
     private Color getDiffuseColorComponent(final Color objectColor, final Vector normalVector, final Vector pointToLightVector) {
-        final double materialDiffuseComponent = Double.parseDouble(materialSolid.getPhong().getKd());
-
         // max(0.0, n * l)
         final double diffuseFactor = Math.min(Math.max(0.0, normalVector.dotProduct(pointToLightVector)), 1.0);
 
         return objectColor
                 .multiplyByColor(lightColor)
-                .multiplyByFactor(materialDiffuseComponent)
+                .multiplyByFactor(this.surface.getMaterial().getDiffuseComponent())
                 .multiplyByFactor(diffuseFactor);
     }
 
@@ -239,14 +230,15 @@ public class PhongShader {
      * @return Color containing only specular color components for r, g and b
      */
     private Color getSpecularColorComponent(final Vector normalVector, final Vector pointToLightVector, final Vector pointToCameraVector, final Vector reflectionVector) {
-        final double materialSpecularComponent = Double.parseDouble(materialSolid.getPhong().getKs());
-        final double shininess = Double.parseDouble(materialSolid.getPhong().getExponent());
-
         // max((r * v)^a, 0.0)
-        final double specularFactor = Math.min(Math.max(0.0, Math.pow(reflectionVector.dotProduct(pointToCameraVector), shininess)), 1.0);
+        final double specularFactor = Math.min(
+                Math.max(
+                        0.0,
+                        Math.pow(reflectionVector.dotProduct(pointToCameraVector), this.surface.getMaterial().getShininessExponent()))
+                , 1.0);
 
         Color specular = lightColor
-                .multiplyByFactor(materialSpecularComponent)
+                .multiplyByFactor(this.surface.getMaterial().getSpecularComponent())
                 .multiplyByFactor(specularFactor);
 
         if (normalVector.dotProduct(pointToLightVector) < 0.0) {
@@ -255,5 +247,4 @@ public class PhongShader {
 
         return specular;
     }
-
 }
