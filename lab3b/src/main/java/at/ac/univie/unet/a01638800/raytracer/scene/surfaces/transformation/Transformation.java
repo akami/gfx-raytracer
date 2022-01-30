@@ -1,20 +1,27 @@
 package at.ac.univie.unet.a01638800.raytracer.scene.surfaces.transformation;
 
 import at.ac.univie.unet.a01638800.raytracer.geometry.Matrix;
+import at.ac.univie.unet.a01638800.raytracer.geometry.Point;
+import at.ac.univie.unet.a01638800.raytracer.geometry.Ray;
 import at.ac.univie.unet.a01638800.raytracer.geometry.Vector;
 import at.ac.univie.unet.a01638800.raytracer.xml.scene.*;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class Transformation {
     private Vector translationVector;
-    private double[] xyzRotationFactors;
     private Vector scalingVector;
 
     private Matrix translationMatrix;
+
     private Matrix scalingMatrix;
+    private Matrix inverseScalingMatrix;
+
     private Matrix rotationMatrix;
+    private Matrix inverseRotationMatrix;
 
     public Transformation(XmlSurface.XmlTransform transform) {
-        this.xyzRotationFactors = new double[3];
+        this.rotationMatrix = new Matrix(4, 4, true);
+        this.inverseRotationMatrix = new Matrix(4, 4, true);
 
         for (XmlTransformation xmlTransformation : transform.getTransform()) {
             if (xmlTransformation instanceof XmlTranslate) {
@@ -25,6 +32,7 @@ public class Transformation {
                         Double.parseDouble(translate.getY()),
                         Double.parseDouble(translate.getZ())
                 );
+
                 this.translationMatrix = this.constructTranslationMatrix(this.getInverseTranslationVector());
             } else if (xmlTransformation instanceof XmlScale) {
                 XmlScale scale = (XmlScale) xmlTransformation;
@@ -37,95 +45,38 @@ public class Transformation {
 
                 // get inverse scaling vector to directly apply transformation matrix onto ray direction
                 this.scalingMatrix = this.constructScalingMatrix(this.getInverseScalingVector());
-
+                this.inverseScalingMatrix = this.constructScalingMatrix(this.getScalingVector());
             } else if (xmlTransformation instanceof XmlRotateX) {
-                this.xyzRotationFactors[0] = Double.parseDouble(((XmlRotateX) xmlTransformation).getTheta());
+                double theta = Double.parseDouble(((XmlRotateX) xmlTransformation).getTheta());
 
-                double[] negatedXyzFactors = this.getInverseXyzRotationFactors();
-                this.rotationMatrix = this.constructRotationXMatrix(negatedXyzFactors[0]);
-
+                this.inverseRotationMatrix = inverseRotationMatrix.multiply(constructRotationXMatrix(theta));
+                this.rotationMatrix = rotationMatrix.multiply(constructRotationXMatrix(-theta));
             } else if (xmlTransformation instanceof XmlRotateY) {
-                this.xyzRotationFactors[1] = Double.parseDouble(((XmlRotateY) xmlTransformation).getTheta());
+                double theta = Double.parseDouble(((XmlRotateY) xmlTransformation).getTheta());
 
-                double[] negatedXyzFactors = this.getInverseXyzRotationFactors();
-                this.rotationMatrix = this.constructRotationYMatrix(negatedXyzFactors[1]);
-
+                this.inverseRotationMatrix = inverseRotationMatrix.multiply(constructRotationYMatrix(theta));
+                this.rotationMatrix = rotationMatrix.multiply(constructRotationYMatrix(-theta));
             } else if (xmlTransformation instanceof XmlRotateZ) {
-                this.xyzRotationFactors[2] = Double.parseDouble(((XmlRotateZ) xmlTransformation).getTheta());
+                double theta = Double.parseDouble(((XmlRotateZ) xmlTransformation).getTheta());
 
-                double[] negatedXyzFactors = this.getInverseXyzRotationFactors();
-                this.rotationMatrix = this.constructRotationZMatrix(negatedXyzFactors[2]);
+                this.inverseRotationMatrix = inverseRotationMatrix.multiply(constructRotationZMatrix(theta));
+                this.rotationMatrix = rotationMatrix.multiply(constructRotationZMatrix(-theta));
             }
         }
     }
 
-    public Vector getTranslationVector() {
-        return translationVector;
-    }
-
-    public void setTranslationVector(Vector translationVector) {
-        this.translationVector = translationVector;
-    }
-
-    public double[] getXyzRotationFactors() {
-        return xyzRotationFactors;
-    }
-
-    public void setXyzRotationFactors(double[] xyzRotationFactors) {
-        this.xyzRotationFactors = xyzRotationFactors;
-    }
-
-    public Vector getScalingVector() {
-        return scalingVector;
-    }
-
-    public void setScalingVector(Vector scalingVector) {
-        this.scalingVector = scalingVector;
-    }
-
-    public Matrix getTranslationMatrix() {
-        return translationMatrix;
-    }
-
-    public void setTranslationMatrix(Matrix translationMatrix) {
-        this.translationMatrix = translationMatrix;
-    }
-
-    public Matrix getScalingMatrix() {
-        return scalingMatrix;
-    }
-
-    public void setScalingMatrix(Matrix scalingMatrix) {
-        this.scalingMatrix = scalingMatrix;
-    }
-
-    public Matrix getRotationMatrix() {
-        return rotationMatrix;
-    }
-
-    public void setRotationMatrix(Matrix rotationMatrix) {
-        this.rotationMatrix = rotationMatrix;
-    }
-
-    public Vector getInverseTranslationVector() {
+    private Vector getInverseTranslationVector() {
         return this.translationVector.invert();
     }
 
-    public Vector getInverseScalingVector() {
+    private Vector getScalingVector() {
+        return new Vector(this.scalingVector.getX(), this.scalingVector.getY(), this.scalingVector.getZ());
+    }
+    private Vector getInverseScalingVector() {
         return new Vector(1D / this.scalingVector.getX(), 1D / this.scalingVector.getY(), 1D / this.scalingVector.getZ());
     }
 
-    public double[] getInverseXyzRotationFactors() {
-        double[] negatedFactors = this.xyzRotationFactors;
-
-        for (double negatedFactor : negatedFactors) {
-            negatedFactor = -negatedFactor;
-        }
-
-        return negatedFactors;
-    }
-
-    public Matrix constructTranslationMatrix(Vector translationVector) {
+    private Matrix constructTranslationMatrix(Vector translationVector) {
         Matrix newMatrix = new Matrix(4, 4, true);
 
         int column = newMatrix.getColumns() - 1;
@@ -137,7 +88,7 @@ public class Transformation {
         return newMatrix;
     }
 
-    public Matrix constructScalingMatrix(Vector scalingVector) {
+    private Matrix constructScalingMatrix(Vector scalingVector) {
         Matrix newMatrix = new Matrix(4, 4, true);
 
         newMatrix.set(0, 0, scalingVector.getX());
@@ -147,39 +98,83 @@ public class Transformation {
         return newMatrix;
     }
 
-    public Matrix constructRotationXMatrix(double angle) {
+    private Matrix constructRotationXMatrix(double angle) {
         Matrix newMatrix = new Matrix(4, 4, true);
 
-        // TODO check if radian
-        newMatrix.set(1, 1, Math.cos(angle));
-        newMatrix.set(1, 2, -Math.sin(angle));
-        newMatrix.set(2, 1, Math.sin(angle));
-        newMatrix.set(2, 2, Math.cos(angle));
+        double angleInRadian = Math.toRadians(angle);
+        newMatrix.set(1, 1, Math.cos(angleInRadian));
+        newMatrix.set(1, 2, -Math.sin(angleInRadian));
+        newMatrix.set(2, 1, Math.sin(angleInRadian));
+        newMatrix.set(2, 2, Math.cos(angleInRadian));
 
         return newMatrix;
     }
 
-    public Matrix constructRotationYMatrix(double angle) {
+    private Matrix constructRotationYMatrix(double angle) {
         Matrix newMatrix = new Matrix(4, 4, true);
 
-        // TODO check if radian
-        newMatrix.set(0, 0, Math.cos(angle));
-        newMatrix.set(2, 0,  -Math.sin(angle));
-        newMatrix.set(0, 2, Math.sin(angle));
-        newMatrix.set(2, 2, Math.cos(angle));
+        double angleInRadian = Math.toRadians(angle);
+        newMatrix.set(0, 0, Math.cos(angleInRadian));
+        newMatrix.set(2, 0, -Math.sin(angleInRadian));
+        newMatrix.set(0, 2, Math.sin(angleInRadian));
+        newMatrix.set(2, 2, Math.cos(angleInRadian));
 
         return newMatrix;
     }
 
-    public Matrix constructRotationZMatrix(double angle) {
+    private Matrix constructRotationZMatrix(double angle) {
         Matrix newMatrix = new Matrix(4, 4, true);
 
-        // TODO check if radian
-        newMatrix.set(0, 0, Math.cos(angle));
-        newMatrix.set(0, 1, -Math.sin(angle));
-        newMatrix.set(1, 0, Math.sin(angle));
-        newMatrix.set(1, 1, Math.cos(angle));
+        double angleInRadian = Math.toRadians(angle);
+        newMatrix.set(0, 0, Math.cos(angleInRadian));
+        newMatrix.set(0, 1, -Math.sin(angleInRadian));
+        newMatrix.set(1, 0, Math.sin(angleInRadian));
+        newMatrix.set(1, 1, Math.cos(angleInRadian));
 
         return newMatrix;
+    }
+
+    public Pair<Ray, Boolean> transform(Ray ray) {
+        boolean transformed = false;
+
+        Vector direction = ray.getDirection();
+        Point origin = ray.getOrigin();
+
+        if (scalingMatrix != null) {
+            direction = scalingMatrix.multiply(direction, true);
+            origin = scalingMatrix.multiply(origin, true);
+            transformed = true;
+        }
+
+        if (rotationMatrix != null) {
+            direction = rotationMatrix.multiply(direction, true);
+            origin = rotationMatrix.multiply(origin, true);
+            transformed = true;
+        }
+
+        if (translationMatrix != null) {
+            origin = translationMatrix.multiply(origin, true);
+            transformed = true;
+        }
+
+        Ray newRay = new Ray();
+        newRay.setDirection(direction);
+        newRay.setOrigin(origin);
+
+        return Pair.of(newRay, transformed);
+    }
+
+    public Vector transform(Vector normal) {
+        Vector newNormal = normal;
+
+        if (inverseScalingMatrix != null) {
+            newNormal = inverseScalingMatrix.multiply(newNormal, true);
+        }
+
+        if (inverseRotationMatrix != null) {
+            newNormal = inverseRotationMatrix.multiply(newNormal, true);
+        }
+
+        return newNormal.normalize();
     }
 }

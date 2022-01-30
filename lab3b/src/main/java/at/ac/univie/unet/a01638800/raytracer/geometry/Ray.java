@@ -6,6 +6,9 @@ package at.ac.univie.unet.a01638800.raytracer.geometry;
  */
 public class Ray {
 
+    public static final double MIN_DISTANCE = 0.1;
+    public static final double MAX_DISTANCE = 100D;
+
     private Point origin;
     private Vector direction;
     private double minDistance;
@@ -14,15 +17,8 @@ public class Ray {
     public Ray() {
         origin = new Point();
         direction = new Vector();
-        minDistance = 0.1;
-        maxDistance = 100;
-    }
-
-    public Ray(final Point origin, final Vector direction, final double minDistance, final double maxDistance) {
-        this.origin = origin;
-        this.direction = direction;
-        this.minDistance = minDistance;
-        this.maxDistance = maxDistance;
+        minDistance = MIN_DISTANCE;
+        maxDistance = MAX_DISTANCE;
     }
 
     public Point getOrigin() {

@@ -1,17 +1,16 @@
 package at.ac.univie.unet.a01638800.raytracer.scene.camera;
 
-import at.ac.univie.unet.a01638800.raytracer.geometry.*;
+import at.ac.univie.unet.a01638800.raytracer.geometry.Coordinate;
+import at.ac.univie.unet.a01638800.raytracer.geometry.Matrix;
+import at.ac.univie.unet.a01638800.raytracer.geometry.Point;
+import at.ac.univie.unet.a01638800.raytracer.geometry.Ray;
+import at.ac.univie.unet.a01638800.raytracer.geometry.Vector;
 import at.ac.univie.unet.a01638800.raytracer.xml.scene.XmlCamera;
 
 /**
  * Represents the camera in the scene. The camera shoots rays at the image plane for every pixel.
  */
 public class Camera {
-
-    /**
-     * Offset to shoot the ray through the middle of the pixel
-     */
-    private static final double OFFSET = 0.5;
 
     /**
      * The parsed camera data from the input xml file
@@ -39,15 +38,23 @@ public class Camera {
     private final Matrix cameraMatrix;
 
     /**
-     * The 2D-array of rays the camera shoots at the image plane
+     * The amount of samples (for supersampling)
      */
-    private Ray[][] rays;
+    private final int samples;
 
-    public Camera(final XmlCamera inputCamera) {
+    /**
+     * The 3D-array of rays the camera shoots at the image plane (3rd dimension is the amount of samples)
+     */
+    private Ray[][][] rays;
+
+    public Camera(final XmlCamera inputCamera, final int samples) {
         this.inputCamera = inputCamera;
 
-        this.imageWidth = Integer.parseInt(inputCamera.getResolution().getHorizontal());
-        this.imageHeight = Integer.parseInt(inputCamera.getResolution().getVertical());
+        // samples can only be done in a grid, so 2x anti aliasing results in 4x the rays
+        this.samples = samples * samples;
+
+        imageWidth = Integer.parseInt(inputCamera.getResolution().getHorizontal());
+        imageHeight = Integer.parseInt(inputCamera.getResolution().getVertical());
 
         cameraPosition = new Point(
                 Double.parseDouble(inputCamera.getPosition().getX()),
@@ -55,22 +62,22 @@ public class Camera {
                 Double.parseDouble(inputCamera.getPosition().getZ())
         );
 
-        Point lookAt = new Point(
+        final Point lookAt = new Point(
                 Double.parseDouble(inputCamera.getLookat().getX()),
                 Double.parseDouble(inputCamera.getLookat().getY()),
                 Double.parseDouble(inputCamera.getLookat().getZ())
         );
 
-        Vector up = new Vector(
+        final Vector up = new Vector(
                 Double.parseDouble(inputCamera.getUp().getX()),
                 Double.parseDouble(inputCamera.getUp().getY()),
                 Double.parseDouble(inputCamera.getUp().getZ())
         );
 
-        this.cameraMatrix = constructCameraMatrix(cameraPosition, lookAt, up);
+        cameraMatrix = constructCameraMatrix(cameraPosition, lookAt, up);
 
         // pre-define 2D array size to match resolution of inputImage
-        this.rays = new Ray[imageWidth][imageHeight];
+        rays = new Ray[imageWidth][imageHeight][samples * samples];
 
         constructCameraRays();
     }
@@ -79,11 +86,11 @@ public class Camera {
         return inputCamera;
     }
 
-    public Ray[][] getRays() {
+    public Ray[][][] getRays() {
         return rays;
     }
 
-    public void setRays(final Ray[][] rays) {
+    public void setRays(final Ray[][][] rays) {
         this.rays = rays;
     }
 
@@ -95,14 +102,14 @@ public class Camera {
         return imageHeight;
     }
 
-    private Matrix constructCameraMatrix(Point cameraPosition, Point lookAt, Vector up) {
+    private Matrix constructCameraMatrix(final Point cameraPosition, final Point lookAt, final Vector up) {
         // construct column vectors
-        Vector z = cameraPosition.subtractPoint(lookAt).normalize();
-        Vector x = up.crossProduct(z).normalize();
-        Vector y = z.crossProduct(x).normalize();
+        final Vector z = cameraPosition.subtractPoint(lookAt).normalize();
+        final Vector x = up.crossProduct(z).normalize();
+        final Vector y = z.crossProduct(x).normalize();
 
         // throw vectors into a coordinate array
-        Coordinate[] coordinates = new Coordinate[4];
+        final Coordinate[] coordinates = new Coordinate[4];
 
         coordinates[0] = x.getCoordinate();
         coordinates[1] = y.getCoordinate();
@@ -110,7 +117,7 @@ public class Camera {
         coordinates[3] = cameraPosition.getCoordinate();
 
         // construct matrix out of the array
-        Matrix cameraMatrix = new Matrix(coordinates, true);
+        final Matrix cameraMatrix = new Matrix(coordinates, true);
         cameraMatrix.set(3, 0, 0);
         cameraMatrix.set(3, 1, 0);
         cameraMatrix.set(3, 2, 0);
@@ -122,39 +129,63 @@ public class Camera {
     }
 
     /**
-     * This method constructs a camera ray for each pixel in the image plane. For each pixel:
-     *
+     * This method constructs x camera rays for each pixel in the image plane, where x is the amount of the sample grid
+     * size. For each pixel:
      * <ol>
-     *     <li> create a new ray </li>
-     *     <li> set the direction of the ray to the pixel coordinate and the z value to -1. The z value corresponds to
-     *     the location of the image plane in the scene. </li>
-     *     <li> normalizing the direction. range: (0...1) </li>
-     *     <li> mapping the direction to the image plane. range (-1...1) </li>
-     *     <li> taking the FOV and image dimensions into account for rectangular images </li>
-     *     <li> normalizing the direction </li>
-     *     <li> set the final direction of the ray </li>
-     *     <li> set the origin of the ray to the camera position </li>
+     *     <li>Construct an imaginary grid</li>
+     *     <li>For each grid entry</li>
+     *     <ul>
+     *          <li>Create a point for a pixel with image x/y and z = -1 as coordinates The z value corresponds to
+     *          the location of the image plane in the scene.</li>
+     *          <li>Normalizing the point; Range: (0...1)</li>
+     *          <li>Mapping the pixel to the image plane; Range (-1...1)</li>
+     *          <li>Calculate in the FOV and image dimensions</li>
+     *          <li>Transform the pixel coordinate using the camera matrix</li>
+     *          <li>Create a ray shooting from the camera position to the transformed coordinate</li>
+     *          <li>Normalizing the ray direction</li>
+     *          <li>Set the origin of the ray to the camera position</li>
+     *     </ul>
      * </ol>
-     * <p>
      * Note that this will produce an image that is upside down (starting from the bottom left corner going up). This
      * means that the final image has to be flipped.
      */
     public void constructCameraRays() {
         for (int x = 0; x < imageWidth; x++) {
             for (int y = 0; y < imageHeight; y++) {
-                rays[x][y] = new Ray();
+                int currentSample = 0;
 
-                Point pixel = new Point(x, y, -1.0);
+                // amount of samples per row/column
+                final int samplesPerRowColumn = (int) Math.sqrt(samples);
 
-                normalizeCoordinate(pixel.getCoordinate());
-                mapCoordinateToImagePlane(pixel.getCoordinate());
-                includeFOVAndImageDimensions(pixel.getCoordinate());
+                // value by which the offset into the pixel x and y axis are incremented
+                final double offset = 1D / samplesPerRowColumn;
 
-                Vector direction = cameraMatrix.multiply(new Vector(pixel.getCoordinate()), true);
-                direction = direction.normalize();
+                // defines the start and end of the grid on which we shoot the rays
+                final double gridPadding = offset / 2;
 
-                rays[x][y].setDirection(direction);
-                rays[x][y].setOrigin(cameraPosition);
+                // i = current row, j = current column of grid
+                for (int i = 0; i < samplesPerRowColumn; i++) {
+                    for (int j = 0; j < samplesPerRowColumn; j++) {
+                        final Point pixel = new Point(x, y, -1.0);
+
+                        // offset * the row/column - the gridpadding (to ensure that the distribution is uniform across the image)
+                        final double offsetX = offset * i - gridPadding;
+                        final double offsetY = offset * j - gridPadding;
+
+                        normalizeCoordinate(pixel.getCoordinate(), offsetX, offsetY);
+                        mapCoordinateToImagePlane(pixel.getCoordinate());
+                        includeFOVAndImageDimensions(pixel.getCoordinate());
+
+                        Vector direction = cameraMatrix.multiply(new Vector(pixel.getCoordinate()), true);
+                        direction = direction.normalize();
+
+                        final Ray ray = new Ray();
+                        ray.setDirection(direction);
+                        ray.setOrigin(cameraPosition);
+
+                        rays[x][y][currentSample++] = ray;
+                    }
+                }
             }
         }
     }
@@ -165,10 +196,12 @@ public class Camera {
      * makes the array be shot into the middle of the pixel.
      *
      * @param coordinate ray direction coordinate
+     * @param offsetX    value by which the ray is offset on the X axis
+     * @param offsetY    value by which the ray is offset on the Y axis
      */
-    public void normalizeCoordinate(final Coordinate coordinate) {
-        coordinate.getXyzValues()[0] = (coordinate.getXyzValues()[0] + OFFSET) / imageWidth;
-        coordinate.getXyzValues()[1] = (coordinate.getXyzValues()[1] + OFFSET) / imageHeight;
+    public void normalizeCoordinate(final Coordinate coordinate, final double offsetX, final double offsetY) {
+        coordinate.getXyzValues()[0] = (coordinate.getXyzValues()[0] + offsetX) / imageWidth;
+        coordinate.getXyzValues()[1] = (coordinate.getXyzValues()[1] + offsetY) / imageHeight;
     }
 
     /**

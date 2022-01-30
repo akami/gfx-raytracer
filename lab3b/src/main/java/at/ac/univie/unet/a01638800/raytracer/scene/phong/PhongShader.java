@@ -5,6 +5,7 @@ import at.ac.univie.unet.a01638800.raytracer.geometry.Point;
 import at.ac.univie.unet.a01638800.raytracer.geometry.Vector;
 import at.ac.univie.unet.a01638800.raytracer.scene.intersection.Intersection;
 import at.ac.univie.unet.a01638800.raytracer.scene.surfaces.Surface;
+import at.ac.univie.unet.a01638800.raytracer.xml.scene.XmlAmbientLight;
 import at.ac.univie.unet.a01638800.raytracer.xml.scene.XmlLight;
 import at.ac.univie.unet.a01638800.raytracer.xml.scene.XmlParallelLight;
 import at.ac.univie.unet.a01638800.raytracer.xml.scene.XmlPointLight;
@@ -29,18 +30,15 @@ public class PhongShader {
      */
     private final Intersection intersection;
 
-    private final IlluminationMode illuminate;
-
     /**
      * The light color
      */
     private final Color lightColor;
 
-    public PhongShader(final XmlLight light, final Surface surface, final Intersection intersection, IlluminationMode illuminate) {
+    public PhongShader(final XmlLight light, final Surface surface, final Intersection intersection) {
         this.light = light;
         this.surface = surface;
         this.intersection = intersection;
-        this.illuminate = illuminate;
 
         // set light color
         lightColor = new Color(
@@ -86,7 +84,7 @@ public class PhongShader {
     private Vector getPointToLightVector() {
         Vector pointToLightVector = new Vector();
 
-        if (illuminate == IlluminationMode.PARALLEL) {
+        if (light instanceof XmlParallelLight) {
             // scene lighting is of type parallel light
             final XmlParallelLight parallelLight = (XmlParallelLight) light;
 
@@ -97,11 +95,11 @@ public class PhongShader {
             );
 
             pointToLightVector = pointToLightVector.invert();
-        } else if (illuminate == IlluminationMode.POINT) {
+        } else if (light instanceof XmlPointLight) {
             // scene lighting is of type point light
             final XmlPointLight pointLight = (XmlPointLight) light;
 
-            Point pointLightPosition = new Point(
+            final Point pointLightPosition = new Point(
                     Double.parseDouble(pointLight.getPosition().getX()),
                     Double.parseDouble(pointLight.getPosition().getY()),
                     Double.parseDouble(pointLight.getPosition().getZ())
@@ -152,7 +150,7 @@ public class PhongShader {
     private Color getColorComponents(final Vector normalVector, final Vector pointToLightVector, final Vector pointToCameraVector, final Vector reflectionVector) {
         // set up color array
         final Color colorComponents = new Color();
-        Color objectColor = this.surface.getColor(this.intersection);
+        final Color objectColor = surface.getColor(intersection);
 
         // compute color components individually
         final Color ambient = getAmbientColorComponent(objectColor);
@@ -169,15 +167,15 @@ public class PhongShader {
      *
      * @param objectColor the object's color
      * @return the ambient color component for r, g and b
-     * <p>
-     * Note that the ambient component is only calculated if the pixel should not be illuminated by the diffuse and
-     * specular components. This happens when the given light is of type AmbientLight, for directional lights such as
-     * the ParallelLight, the ambient component does not have to be computed again.
+     *         <p>
+     *         Note that the ambient component is only calculated if the pixel should not be illuminated by the diffuse and
+     *         specular components. This happens when the given light is of type AmbientLight, for directional lights such as
+     *         the ParallelLight, the ambient component does not have to be computed again.
      */
     private Color getAmbientColorComponent(final Color objectColor) {
         // only compute for ambient light
-        if (illuminate == IlluminationMode.AMBIENT) {
-            return objectColor.multiplyByColor(lightColor).multiplyByFactor(this.surface.getMaterial().getAmbientComponent());
+        if (light instanceof XmlAmbientLight) {
+            return objectColor.multiplyByColor(lightColor).multiplyByFactor(surface.getMaterial().getAmbientComponent());
         }
 
         return new Color();
@@ -205,7 +203,7 @@ public class PhongShader {
 
         return objectColor
                 .multiplyByColor(lightColor)
-                .multiplyByFactor(this.surface.getMaterial().getDiffuseComponent())
+                .multiplyByFactor(surface.getMaterial().getDiffuseComponent())
                 .multiplyByFactor(diffuseFactor);
     }
 
@@ -234,11 +232,11 @@ public class PhongShader {
         final double specularFactor = Math.min(
                 Math.max(
                         0.0,
-                        Math.pow(reflectionVector.dotProduct(pointToCameraVector), this.surface.getMaterial().getShininessExponent()))
+                        Math.pow(reflectionVector.dotProduct(pointToCameraVector), surface.getMaterial().getShininessExponent()))
                 , 1.0);
 
         Color specular = lightColor
-                .multiplyByFactor(this.surface.getMaterial().getSpecularComponent())
+                .multiplyByFactor(surface.getMaterial().getSpecularComponent())
                 .multiplyByFactor(specularFactor);
 
         if (normalVector.dotProduct(pointToLightVector) < 0.0) {
@@ -247,4 +245,5 @@ public class PhongShader {
 
         return specular;
     }
+
 }

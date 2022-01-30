@@ -1,25 +1,20 @@
 package at.ac.univie.unet.a01638800.raytracer.scene.surfaces;
 
-import at.ac.univie.unet.a01638800.raytracer.scene.surfaces.material.Material;
 import at.ac.univie.unet.a01638800.raytracer.geometry.Vertex;
 
-// TODO documentation
+/**
+ * A class representing a face consisting of multiple vertices
+ */
 public class Face {
 
     private final Vertex[] vertices;
 
-    private final Integer smoothingGroup;
-
-    public Face(final Vertex[] vertices, final Integer smoothingGroup) {
+    public Face(final Vertex[] vertices) {
         this.vertices = vertices;
-        this.smoothingGroup = smoothingGroup;
     }
 
     public Vertex[] getVertices() {
         return vertices;
     }
 
-    public Integer getSmoothingGroup() {
-        return smoothingGroup;
-    }
 }

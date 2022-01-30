@@ -5,7 +5,9 @@ import at.ac.univie.unet.a01638800.raytracer.geometry.Point;
 import at.ac.univie.unet.a01638800.raytracer.geometry.Ray;
 import at.ac.univie.unet.a01638800.raytracer.geometry.Vector;
 import at.ac.univie.unet.a01638800.raytracer.scene.intersection.Intersection;
+import at.ac.univie.unet.a01638800.raytracer.scene.surfaces.transformation.Transformation;
 import at.ac.univie.unet.a01638800.raytracer.xml.scene.XmlSphere;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * Represents a Surface of type Sphere. Extending the surface class means implementing an intersection test algorithm
@@ -67,8 +69,26 @@ public class Sphere extends Surface {
      */
     @Override
     public Intersection intersectionDetected(final Ray ray) {
-        final Point rayOrigin = ray.getOrigin();
-        final Vector rayDirection = ray.getDirection();
+        Intersection intersection = null;
+
+        Vector originalRayDirection = ray.getDirection();
+        Point originalRayOrigin = ray.getOrigin();
+
+        Ray transformedRay;
+        boolean transformed = false;
+
+        Transformation transformation = getTransformation();
+        if (transformation != null) {
+            Pair<Ray, Boolean> transformedRayAndTransformed = transformation.transform(ray);
+
+            transformedRay = transformedRayAndTransformed.getLeft();
+            transformed = transformedRayAndTransformed.getRight();
+        } else {
+            transformedRay = ray;
+        }
+
+        final Point rayOrigin = transformedRay.getOrigin();
+        final Vector rayDirection = transformedRay.getDirection();
 
         final Point sphereCenter = center;
         final double sphereRadiusSquared = radius2;
@@ -87,21 +107,26 @@ public class Sphere extends Surface {
         final double[] solution = generalSolutionFormula(a, b, c, t1, t2);
 
         // only consider smaller t (= the nearest intersection) and positive t
-        if (solution == null) {
-            return null;
-        } else if (solution[0] < EPSILON_OFFSET) {
-            if (solution[1] >= EPSILON_OFFSET) {
-                return new Intersection(rayOrigin, center, rayDirection, solution[1]);
+        if (solution != null) {
+            if (solution[0] < EPSILON_OFFSET) {
+                if (solution[1] >= EPSILON_OFFSET) {
+                    return new Intersection(originalRayOrigin, center, originalRayDirection, solution[1]);
+                }
+            } else if (solution[1] < EPSILON_OFFSET) {
+                if (solution[0] >= EPSILON_OFFSET) {
+                    intersection = new Intersection(originalRayOrigin, center, originalRayDirection, solution[0]);
+                }
+            } else {
+                intersection = new Intersection(originalRayOrigin, center, originalRayDirection, Math.min(solution[0], solution[1]));
             }
-        } else if (solution[1] < EPSILON_OFFSET) {
-            if (solution[0] >= EPSILON_OFFSET) {
-                return new Intersection(rayOrigin, center, rayDirection, solution[0]);
-            }
-        } else {
-            return new Intersection(rayOrigin, center, rayDirection, Math.min(solution[0], solution[1]));
         }
 
-        return null;
+        if (intersection != null && transformed) {
+            Vector transformedNormal = transformation.transform(intersection.getNormal());
+            intersection.setNormal(transformedNormal);
+        }
+
+        return intersection;
     }
 
     private double[] generalSolutionFormula(final double a, final double b, final double c, double t1, double t2) {

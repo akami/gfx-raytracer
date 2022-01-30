@@ -1,6 +1,8 @@
 package at.ac.univie.unet.a01638800.raytracer.geometry;
 
-// TODO documentation
+/**
+ * Represents the a vertex, including its position, normal and texture.
+ */
 public class Vertex {
 
     private final Point position;
@@ -24,4 +26,5 @@ public class Vertex {
     public Point getTexture() {
         return texture;
     }
+
 }

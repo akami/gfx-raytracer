@@ -2,6 +2,7 @@ package at.ac.univie.unet.a01638800.raytracer.scene.surfaces;
 
 import at.ac.univie.unet.a01638800.raytracer.geometry.Color;
 import at.ac.univie.unet.a01638800.raytracer.geometry.Point;
+import at.ac.univie.unet.a01638800.raytracer.geometry.Ray;
 import at.ac.univie.unet.a01638800.raytracer.scene.intersection.Intersection;
 import at.ac.univie.unet.a01638800.raytracer.scene.intersection.IntersectionTest;
 import at.ac.univie.unet.a01638800.raytracer.scene.surfaces.material.Material;
@@ -18,7 +19,10 @@ public abstract class Surface implements IntersectionTest {
 
     protected Surface(final XmlSurface surface) {
         this.xmlSurface = surface;
-        this.transformation = new Transformation(surface.getTransform());
+
+        if (surface.getTransform() != null) {
+            this.transformation = new Transformation(surface.getTransform());
+        }
     }
 
     public XmlSurface getXmlSurface() {

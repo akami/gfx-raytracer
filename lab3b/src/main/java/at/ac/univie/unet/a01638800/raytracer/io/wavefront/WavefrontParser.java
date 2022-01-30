@@ -14,17 +14,14 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * # or o ignore line
- * <p>
- * v vertice
- * vn vertice normal
- * vt texture coordinates
- * <p>
- * usemtl material for ?
- * s smoothing group? all following elements receive this as smoothing roup
- * f is a face consisting of indexes v/vt/vn
- *
- * TODO documentation
+ * Parser for Wavefront (.obj) file to {@link Mesh} instances.
+ * Currently only the following data/attributes is/are supported:
+ * <ul>
+ *     <li>v for vertices</li>
+ *     <li>vn for normals</li>
+ *     <li>vt for textures</li>
+ *     <li>f for faces</li>
+ * </ul>
  */
 public class WavefrontParser {
 
@@ -38,6 +35,13 @@ public class WavefrontParser {
         return INSTANCE;
     }
 
+    /**
+     * Parses a Wavefront input file and converts it to a {@link Mesh}
+     *
+     * @param filePath the path to the Wavefront file
+     * @return {@link Mesh} that can be used in the application
+     * @throws WavefrontParserException whenever an issue occurs
+     */
     public Mesh parseFile(final XmlSurface xmlSurface, final String filePath) throws WavefrontParserException {
         try (final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath)))) {
             final List<Face> faces = new LinkedList<>();
@@ -45,9 +49,6 @@ public class WavefrontParser {
             final List<Point> vertices = new LinkedList<>();
             final List<Vector> normals = new LinkedList<>();
             final List<Point> textures = new LinkedList<>();
-
-            // default value is "off" -> null
-            Integer smoothingGroup = null;
 
             String line;
             while ((line = bufferedReader.readLine()) != null) {
@@ -60,10 +61,6 @@ public class WavefrontParser {
                     normals.add(new Vector(Double.parseDouble(lineParts[1]), Double.parseDouble(lineParts[2]), Double.parseDouble(lineParts[3])));
                 } else if ("vt".equals(lineParts[0])) {
                     textures.add(new Point(Double.parseDouble(lineParts[1]), Double.parseDouble(lineParts[2]), 0D));
-                } if ("s".equals(lineParts[0])) {
-                    if (!"off".equals(lineParts[1])) {
-                        smoothingGroup = Integer.parseInt(lineParts[1]);
-                    }
                 } else if ("f".equals(lineParts[0])) {
                     final List<Vertex> combinedVertices = new LinkedList<>();
 
@@ -76,7 +73,7 @@ public class WavefrontParser {
                         combinedVertices.add(new Vertex(vertices.get(vertexIndex), normals.get(normalIndex), textures.get(textureIndex)));
                     }
 
-                    faces.add(new Face(combinedVertices.toArray(new Vertex[0]), smoothingGroup));
+                    faces.add(new Face(combinedVertices.toArray(new Vertex[0])));
                 }
             }
 

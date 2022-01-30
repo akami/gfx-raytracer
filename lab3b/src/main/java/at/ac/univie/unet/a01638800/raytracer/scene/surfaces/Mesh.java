@@ -1,11 +1,20 @@
 package at.ac.univie.unet.a01638800.raytracer.scene.surfaces;
 
-import at.ac.univie.unet.a01638800.raytracer.geometry.*;
+import at.ac.univie.unet.a01638800.raytracer.geometry.Color;
+import at.ac.univie.unet.a01638800.raytracer.geometry.Point;
+import at.ac.univie.unet.a01638800.raytracer.geometry.Ray;
+import at.ac.univie.unet.a01638800.raytracer.geometry.Vector;
+import at.ac.univie.unet.a01638800.raytracer.geometry.Vertex;
 import at.ac.univie.unet.a01638800.raytracer.scene.intersection.Intersection;
+import at.ac.univie.unet.a01638800.raytracer.scene.surfaces.transformation.Transformation;
 import at.ac.univie.unet.a01638800.raytracer.xml.scene.XmlSurface;
+import org.apache.commons.lang3.tuple.Pair;
 
-// TODO documentation
+/**
+ * Class representing a mesh
+ */
 public class Mesh extends Surface {
+
     /**
      * Acne-Bias offset.
      */
@@ -32,7 +41,7 @@ public class Mesh extends Surface {
         Intersection intersection = null;
 
         for (final Face face : faces) {
-            Intersection nextIntersection = this.detectFaceIntersection(ray, face);
+            final Intersection nextIntersection = detectFaceIntersection(ray, face);
 
             if (intersection == null && nextIntersection != null) {
                 intersection = nextIntersection;
@@ -46,13 +55,29 @@ public class Mesh extends Surface {
         return intersection;
     }
 
-    private Intersection detectFaceIntersection(Ray ray, Face face) {
-        Point rayOrigin = ray.getOrigin();
-        Vector rayDirection = ray.getDirection();
+    private Intersection detectFaceIntersection(final Ray ray, final Face face) {
+        Vector originalRayDirection = ray.getDirection();
+        Point originalRayOrigin = ray.getOrigin();
 
-        Point vertexPosition0 = face.getVertices()[0].getPosition();
-        Point vertexPosition1 = face.getVertices()[1].getPosition();
-        Point vertexPosition2 = face.getVertices()[2].getPosition();
+        Ray transformedRay;
+        boolean transformed = false;
+
+        Transformation transformation = getTransformation();
+        if (transformation != null) {
+            Pair<Ray, Boolean> transformedRayAndTransformed = transformation.transform(ray);
+
+            transformedRay = transformedRayAndTransformed.getLeft();
+            transformed = transformedRayAndTransformed.getRight();
+        } else {
+            transformedRay = ray;
+        }
+
+        final Point rayOrigin = transformedRay.getOrigin();
+        final Vector rayDirection = transformedRay.getDirection();
+
+        final Point vertexPosition0 = face.getVertices()[0].getPosition();
+        final Point vertexPosition1 = face.getVertices()[1].getPosition();
+        final Point vertexPosition2 = face.getVertices()[2].getPosition();
 
         // distance to intersection
         double t = 0;
@@ -62,22 +87,22 @@ public class Mesh extends Surface {
         double barycentricWeightB = 0D;
 
         // set up system variables
-        Vector e1 = vertexPosition1.subtractPoint(vertexPosition0);
-        Vector e2 = vertexPosition2.subtractPoint(vertexPosition0);
+        final Vector e1 = vertexPosition1.subtractPoint(vertexPosition0);
+        final Vector e2 = vertexPosition2.subtractPoint(vertexPosition0);
 
-        Vector pVector = rayDirection.crossProduct(e2);
+        final Vector pVector = rayDirection.crossProduct(e2);
 
-        double det = e1.dotProduct(pVector);
+        final double det = e1.dotProduct(pVector);
 
         // if determinant is negative or close to zero, triangle is back facing or ray misses triangle
         if (det > -EPSILON_OFFSET && det < EPSILON_OFFSET) {
             return null;
         }
 
-        double inverseDet = 1D / det;
+        final double inverseDet = 1D / det;
 
         // calculate weight a
-        Vector tVector = rayOrigin.subtractPoint(vertexPosition0);
+        final Vector tVector = rayOrigin.subtractPoint(vertexPosition0);
         barycentricWeightA = tVector.dotProduct(pVector) * inverseDet;
 
         if (barycentricWeightA < 0D || barycentricWeightA > 1D) {
@@ -85,7 +110,7 @@ public class Mesh extends Surface {
         }
 
         // calculate weight b
-        Vector qVector = tVector.crossProduct(e1);
+        final Vector qVector = tVector.crossProduct(e1);
         barycentricWeightB = rayDirection.dotProduct(qVector) * inverseDet;
 
         if (barycentricWeightB < 0D || barycentricWeightA + barycentricWeightB > 1D) {
@@ -95,11 +120,16 @@ public class Mesh extends Surface {
         t = e2.dotProduct(qVector) * inverseDet;
 
         if (t > EPSILON_OFFSET) {
-            Intersection intersection = new Intersection(rayOrigin, null, rayDirection, t);
+            final Intersection intersection = new Intersection(rayOrigin, null, rayDirection, t);
             intersection.setNormal(face.getVertices()[0].getNormal());
             intersection.setFace(face);
             intersection.setBarycentricWeightA(barycentricWeightA);
             intersection.setBarycentricWeightB(barycentricWeightB);
+
+            if(transformed) {
+                Vector transformedNormal = transformation.transform(intersection.getNormal());
+                intersection.setNormal(transformedNormal);
+            }
 
             return intersection;
         }
@@ -108,24 +138,25 @@ public class Mesh extends Surface {
     }
 
     @Override
-    public Color getColor(Intersection intersection) {
-        Vertex[] vertices = intersection.getFace().getVertices();
+    public Color getColor(final Intersection intersection) {
+        final Vertex[] vertices = intersection.getFace().getVertices();
 
-        Point texture0 = vertices[0].getTexture();
-        Point texture1 = vertices[1].getTexture();
-        Point texture2 = vertices[2].getTexture();
+        final Point texture0 = vertices[0].getTexture();
+        final Point texture1 = vertices[1].getTexture();
+        final Point texture2 = vertices[2].getTexture();
 
-        double barycentricWeightA = intersection.getBarycentricWeightA();
-        double barycentricWeightB = intersection.getBarycentricWeightB();
+        final double barycentricWeightA = intersection.getBarycentricWeightA();
+        final double barycentricWeightB = intersection.getBarycentricWeightB();
 
-        double u = (1 - barycentricWeightA - barycentricWeightB) * texture0.getX()
+        final double u = (1 - barycentricWeightA - barycentricWeightB) * texture0.getX()
                 + barycentricWeightA * texture1.getX()
                 + barycentricWeightB * texture2.getX();
 
-        double v = (1 - barycentricWeightA - barycentricWeightB) * texture0.getY()
+        final double v = (1 - barycentricWeightA - barycentricWeightB) * texture0.getY()
                 + barycentricWeightA * texture1.getY()
                 + barycentricWeightB * texture2.getY();
 
-        return this.getMaterial().getColor(u, v);
+        return getMaterial().getColor(u, v);
     }
+
 }

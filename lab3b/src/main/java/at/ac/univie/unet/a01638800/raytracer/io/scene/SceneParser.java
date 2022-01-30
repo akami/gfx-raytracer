@@ -15,7 +15,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 /**
- * Parses a given dtd input file and generates classes using SAX, JAXB and xcj.
+ * Responsible for parsing XML scene files
  */
 public class SceneParser {
 
@@ -23,14 +23,8 @@ public class SceneParser {
     private final XMLReader xmlReader;
     private final Unmarshaller unmarshaller;
 
-    /**
-     * Sets up the SAXParserFactory in order to load an external dtd file and generate classes out of it.
-     *
-     * @throws SceneParserException
-     */
     private SceneParser() throws SceneParserException {
         try {
-
             /*
              * Set up SAX to disable dtd validation. This was done in case no scene.dtd file as referenced by the xml
              * file is given.
@@ -61,7 +55,7 @@ public class SceneParser {
      *
      * @param filePath the path to the scene file
      * @return scene object that can be used in the application
-     * @throws SceneParserException
+     * @throws SceneParserException whenever an issue occurs
      */
     public XmlScene parseFile(final String filePath) throws SceneParserException {
         try {
