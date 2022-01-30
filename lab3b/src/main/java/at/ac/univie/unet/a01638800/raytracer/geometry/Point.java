@@ -8,10 +8,14 @@ package at.ac.univie.unet.a01638800.raytracer.geometry;
  */
 public class Point {
 
-    private final Coordinate coordinate;
+    private Coordinate coordinate;
 
     public Point() {
         coordinate = new Coordinate(new double[]{0.0, 0.0, 0.0});
+    }
+
+    public Point(final Coordinate coordinate) {
+        this.coordinate = coordinate;
     }
 
     public Point(final double x, final double y, final double z) {
@@ -30,6 +34,14 @@ public class Point {
 
     public double getX() {
         return coordinate.getXyzValues()[0];
+    }
+
+    public Coordinate getCoordinate() {
+        return coordinate;
+    }
+
+    public void setCoordinate(Coordinate coordinate) {
+        this.coordinate = coordinate;
     }
 
     public void setX(final double x) {

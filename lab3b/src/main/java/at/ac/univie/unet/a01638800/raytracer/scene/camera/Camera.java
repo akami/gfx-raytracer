@@ -1,9 +1,6 @@
 package at.ac.univie.unet.a01638800.raytracer.scene.camera;
 
-import at.ac.univie.unet.a01638800.raytracer.geometry.Coordinate;
-import at.ac.univie.unet.a01638800.raytracer.geometry.Point;
-import at.ac.univie.unet.a01638800.raytracer.geometry.Ray;
-import at.ac.univie.unet.a01638800.raytracer.geometry.Vector;
+import at.ac.univie.unet.a01638800.raytracer.geometry.*;
 import at.ac.univie.unet.a01638800.raytracer.xml.scene.XmlCamera;
 
 /**
@@ -37,6 +34,11 @@ public class Camera {
     private final Point cameraPosition;
 
     /**
+     * The matrix we apply camera transformations to
+     */
+    private final Matrix cameraMatrix;
+
+    /**
      * The 2D-array of rays the camera shoots at the image plane
      */
     private Ray[][] rays;
@@ -44,8 +46,8 @@ public class Camera {
     public Camera(final XmlCamera inputCamera) {
         this.inputCamera = inputCamera;
 
-        imageWidth = Integer.parseInt(inputCamera.getResolution().getHorizontal());
-        imageHeight = Integer.parseInt(inputCamera.getResolution().getVertical());
+        this.imageWidth = Integer.parseInt(inputCamera.getResolution().getHorizontal());
+        this.imageHeight = Integer.parseInt(inputCamera.getResolution().getVertical());
 
         cameraPosition = new Point(
                 Double.parseDouble(inputCamera.getPosition().getX()),
@@ -53,8 +55,22 @@ public class Camera {
                 Double.parseDouble(inputCamera.getPosition().getZ())
         );
 
+        Point lookAt = new Point(
+                Double.parseDouble(inputCamera.getLookat().getX()),
+                Double.parseDouble(inputCamera.getLookat().getY()),
+                Double.parseDouble(inputCamera.getLookat().getZ())
+        );
+
+        Vector up = new Vector(
+                Double.parseDouble(inputCamera.getUp().getX()),
+                Double.parseDouble(inputCamera.getUp().getY()),
+                Double.parseDouble(inputCamera.getUp().getZ())
+        );
+
+        this.cameraMatrix = constructCameraMatrix(cameraPosition, lookAt, up);
+
         // pre-define 2D array size to match resolution of inputImage
-        rays = new Ray[imageWidth][imageHeight];
+        this.rays = new Ray[imageWidth][imageHeight];
 
         constructCameraRays();
     }
@@ -77,6 +93,32 @@ public class Camera {
 
     public int getImageHeight() {
         return imageHeight;
+    }
+
+    private Matrix constructCameraMatrix(Point cameraPosition, Point lookAt, Vector up) {
+        // construct column vectors
+        Vector z = cameraPosition.subtractPoint(lookAt).normalize();
+        Vector x = up.crossProduct(z).normalize();
+        Vector y = z.crossProduct(x).normalize();
+
+        // throw vectors into a coordinate array
+        Coordinate[] coordinates = new Coordinate[4];
+
+        coordinates[0] = x.getCoordinate();
+        coordinates[1] = y.getCoordinate();
+        coordinates[2] = z.getCoordinate();
+        coordinates[3] = cameraPosition.getCoordinate();
+
+        // construct matrix out of the array
+        Matrix cameraMatrix = new Matrix(coordinates, true);
+        cameraMatrix.set(3, 0, 0);
+        cameraMatrix.set(3, 1, 0);
+        cameraMatrix.set(3, 2, 0);
+        cameraMatrix.set(0, 3, 0);
+        cameraMatrix.set(1, 3, 0);
+        cameraMatrix.set(2, 3, 0);
+
+        return cameraMatrix;
     }
 
     /**
@@ -102,12 +144,13 @@ public class Camera {
             for (int y = 0; y < imageHeight; y++) {
                 rays[x][y] = new Ray();
 
-                Vector direction = new Vector(x, y, -1.0);
+                Point pixel = new Point(x, y, -1.0);
 
-                normalizeCoordinate(direction.getCoordinate());
-                mapCoordinateToImagePlane(direction.getCoordinate());
-                includeFOVAndImageDimensions(direction.getCoordinate());
+                normalizeCoordinate(pixel.getCoordinate());
+                mapCoordinateToImagePlane(pixel.getCoordinate());
+                includeFOVAndImageDimensions(pixel.getCoordinate());
 
+                Vector direction = cameraMatrix.multiply(new Vector(pixel.getCoordinate()), true);
                 direction = direction.normalize();
 
                 rays[x][y].setDirection(direction);

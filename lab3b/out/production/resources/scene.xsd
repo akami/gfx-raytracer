@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+    <!-- Base Types -->
+    <xs:complexType name="color">
+        <xs:attribute name="r" type="xs:NMTOKEN" use="required"/>
+        <xs:attribute name="g" type="xs:NMTOKEN" use="required"/>
+        <xs:attribute name="b" type="xs:NMTOKEN" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="position">
+        <xs:attribute name="x" type="xs:NMTOKEN" use="required"/>
+        <xs:attribute name="y" type="xs:NMTOKEN" use="required"/>
+        <xs:attribute name="z" type="xs:NMTOKEN" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="fov">
+        <xs:attribute name="angle" type="xs:NMTOKEN" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="resolution">
+        <xs:attribute name="horizontal" type="xs:NMTOKEN" use="required"/>
+        <xs:attribute name="vertical" type="xs:NMTOKEN" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="max_bounces">
+        <xs:attribute name="n" type="xs:NMTOKEN" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="falloff">
+        <xs:attribute name="alpha1" type="xs:NMTOKEN" use="required"/>
+        <xs:attribute name="alpha2" type="xs:NMTOKEN" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="phong">
+        <xs:attribute name="ka" type="xs:NMTOKEN" use="required"/>
+        <xs:attribute name="kd" type="xs:NMTOKEN" use="required"/>
+        <xs:attribute name="ks" type="xs:NMTOKEN" use="required"/>
+        <xs:attribute name="exponent" type="xs:NMTOKEN" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="reflectance">
+        <xs:attribute name="r" type="xs:NMTOKEN" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="transmittance">
+        <xs:attribute name="t" type="xs:NMTOKEN" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="refraction">
+        <xs:attribute name="iof" type="xs:NMTOKEN" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="texture">
+        <xs:attribute name="name" use="required"/>
+    </xs:complexType>
+
+    <!-- Complex Types -->
+    <xs:complexType name="camera">
+        <xs:sequence>
+            <xs:element name="position" type="position"/>
+            <xs:element name="lookat" type="position"/>
+            <xs:element name="up" type="position"/>
+            <xs:element name="horizontal_fov" type="fov"/>
+            <xs:element name="resolution" type="resolution"/>
+            <xs:element name="max_bounces" type="max_bounces"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType abstract="true" name="light">
+        <xs:sequence>
+            <xs:element name="color" type="color"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ambient_light">
+        <xs:complexContent>
+            <xs:extension base="light"/>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="point_light">
+        <xs:complexContent>
+            <xs:extension base="light">
+                <xs:sequence>
+                    <xs:element name="position" type="position"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="parallel_light">
+        <xs:complexContent>
+            <xs:extension base="light">
+                <xs:sequence>
+                    <xs:element name="direction" type="position"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="spot_light">
+        <xs:complexContent>
+            <xs:extension base="light">
+                <xs:sequence>
+                    <xs:element name="position" type="position"/>
+                    <xs:element name="direction" type="position"/>
+                    <xs:element name="falloff" type="falloff"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType abstract="true" name="transformation"/>
+
+    <xs:complexType name="translate">
+        <xs:complexContent>
+            <xs:extension base="transformation">
+                <xs:attribute name="x" type="xs:NMTOKEN" use="required"/>
+                <xs:attribute name="y" type="xs:NMTOKEN" use="required"/>
+                <xs:attribute name="z" type="xs:NMTOKEN" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="scale">
+        <xs:complexContent>
+            <xs:extension base="transformation">
+                <xs:attribute name="x" type="xs:NMTOKEN" use="required"/>
+                <xs:attribute name="y" type="xs:NMTOKEN" use="required"/>
+                <xs:attribute name="z" type="xs:NMTOKEN" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="rotateX">
+        <xs:complexContent>
+            <xs:extension base="transformation">
+                <xs:attribute name="theta" type="xs:NMTOKEN" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="rotateY">
+        <xs:complexContent>
+            <xs:extension base="transformation">
+                <xs:attribute name="theta" type="xs:NMTOKEN" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="rotateZ">
+        <xs:complexContent>
+            <xs:extension base="transformation">
+                <xs:attribute name="theta" type="xs:NMTOKEN" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="material">
+        <xs:sequence>
+            <xs:element name="phong" type="phong"/>
+            <xs:element name="reflectance" type="reflectance"/>
+            <xs:element name="transmittance" type="transmittance"/>
+            <xs:element name="refraction" type="refraction"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="material_solid">
+        <xs:complexContent>
+            <xs:extension base="material">
+                <xs:sequence>
+                    <xs:element name="color" type="color"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="material_textured">
+        <xs:complexContent>
+            <xs:extension base="material">
+                <xs:sequence>
+                    <xs:element name="texture" type="texture"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType abstract="true" name="surface">
+        <xs:sequence>
+            <xs:choice maxOccurs="1" minOccurs="1">
+                <xs:element name="material_solid" type="material_solid"/>
+                <xs:element name="material_textured" type="material_textured"/>
+            </xs:choice>
+            <xs:element name="transform">
+                <xs:complexType>
+                    <xs:choice maxOccurs="unbounded" minOccurs="0">
+                        <xs:element name="translate" type="translate"/>
+                        <xs:element name="scale" type="scale"/>
+                        <xs:element name="rotateX" type="rotateX"/>
+                        <xs:element name="rotateY" type="rotateY"/>
+                        <xs:element name="rotateZ" type="rotateZ"/>
+                    </xs:choice>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="sphere">
+        <xs:complexContent>
+            <xs:extension base="surface">
+                <xs:sequence>
+                    <xs:element name="position" type="position"/>
+                </xs:sequence>
+                <xs:attribute name="radius" type="xs:NMTOKEN" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="mesh">
+        <xs:complexContent>
+            <xs:extension base="surface">
+                <xs:attribute name="name" use="required"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <!-- Structure -->
+    <xs:element name="scene">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="background_color" type="color"/>
+                <xs:element name="camera" type="camera"/>
+                <xs:element name="lights">
+                    <xs:complexType>
+                        <xs:choice maxOccurs="unbounded" minOccurs="0">
+                            <xs:element name="ambient_light" type="ambient_light"/>
+                            <xs:element name="point_light" type="point_light"/>
+                            <xs:element name="parallel_light" type="parallel_light"/>
+                            <xs:element name="spot_light" type="spot_light"/>
+                        </xs:choice>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="surfaces">
+                    <xs:complexType>
+                        <xs:choice maxOccurs="unbounded" minOccurs="0">
+                            <xs:element name="sphere" type="sphere"/>
+                            <xs:element name="mesh" type="mesh"/>
+                        </xs:choice>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="output_file" use="required"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

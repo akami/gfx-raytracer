@@ -126,10 +126,6 @@ public class Mesh extends Surface {
                 + barycentricWeightA * texture1.getY()
                 + barycentricWeightB * texture2.getY();
 
-        if (u < 0 || u > 1 || v < 0 || v > 1) {
-            System.out.println("!");
-        }
-
         return this.getMaterial().getColor(u, v);
     }
 }
