@@ -25,7 +25,7 @@ public class Transformation {
                         Double.parseDouble(translate.getY()),
                         Double.parseDouble(translate.getZ())
                 );
-                this.translationMatrix = this.constructTranslationMatrix(this.translationVector);
+                this.translationMatrix = this.constructTranslationMatrix(this.getInverseTranslationVector());
             } else if (xmlTransformation instanceof XmlScale) {
                 XmlScale scale = (XmlScale) xmlTransformation;
 
@@ -34,19 +34,27 @@ public class Transformation {
                         Double.parseDouble(scale.getY()),
                         Double.parseDouble(scale.getZ())
                 );
-                this.scalingMatrix = this.constructScalingMatrix(this.scalingVector);
+
+                // get inverse scaling vector to directly apply transformation matrix onto ray direction
+                this.scalingMatrix = this.constructScalingMatrix(this.getInverseScalingVector());
 
             } else if (xmlTransformation instanceof XmlRotateX) {
                 this.xyzRotationFactors[0] = Double.parseDouble(((XmlRotateX) xmlTransformation).getTheta());
-                this.rotationMatrix = this.constructRotationXMatrix(this.xyzRotationFactors[0]);
+
+                double[] negatedXyzFactors = this.getInverseXyzRotationFactors();
+                this.rotationMatrix = this.constructRotationXMatrix(negatedXyzFactors[0]);
 
             } else if (xmlTransformation instanceof XmlRotateY) {
                 this.xyzRotationFactors[1] = Double.parseDouble(((XmlRotateY) xmlTransformation).getTheta());
-                this.rotationMatrix = this.constructRotationYMatrix(this.xyzRotationFactors[1]);
+
+                double[] negatedXyzFactors = this.getInverseXyzRotationFactors();
+                this.rotationMatrix = this.constructRotationYMatrix(negatedXyzFactors[1]);
 
             } else if (xmlTransformation instanceof XmlRotateZ) {
                 this.xyzRotationFactors[2] = Double.parseDouble(((XmlRotateZ) xmlTransformation).getTheta());
-                this.rotationMatrix = this.constructRotationZMatrix(this.xyzRotationFactors[2]);
+
+                double[] negatedXyzFactors = this.getInverseXyzRotationFactors();
+                this.rotationMatrix = this.constructRotationZMatrix(negatedXyzFactors[2]);
             }
         }
     }
