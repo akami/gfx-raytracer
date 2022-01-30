@@ -97,7 +97,7 @@ to where things might have gone wrong.
  -------------------------------------
 - locally:
  -- . ./gradlew build
- -- java -jar dist/lab3b-1.0.0.jar <path/to/example_file.xml>
+ -- java -jar lab3b/dist/lab3b-1.0.0.jar <path/to/example_file.xml>
  -- example files can be found in the input folder
 
  - on almighty:
