@@ -7,8 +7,14 @@ import java.util.Arrays;
 public class Matrix {
     private final double[][] data;
 
-    public Matrix(int rows, int columns) {
+    public Matrix(int rows, int columns, boolean identity) {
         data = new double[rows][columns];
+
+        if (identity) {
+            for (int i = 0; i < getRows(); i++) {
+                data[i][i] = 1D;
+            }
+        }
     }
 
     public Matrix(Coordinate[] coordinates, boolean homogenize) {
@@ -60,7 +66,7 @@ public class Matrix {
     }
 
     private static Matrix createSubMatrix(Matrix matrix, int pivotRow, int pivotColumn) {
-        Matrix newMatrix = new Matrix(matrix.getRows() - 1, matrix.getColumns() - 1);
+        Matrix newMatrix = new Matrix(matrix.getRows() - 1, matrix.getColumns() - 1, false);
 
         for (int row = 0, newRow = 0; row < matrix.getRows(); row++) {
             if (row != pivotRow) {
@@ -104,7 +110,7 @@ public class Matrix {
     }
 
     private Matrix multiply(double factor) {
-        Matrix newMatrix = new Matrix(getRows(), getColumns());
+        Matrix newMatrix = new Matrix(getRows(), getColumns(), false);
 
         for (int row = 0; row < getRows(); row++) {
             for (int column = 0; column < getColumns(); column++) {
@@ -120,7 +126,7 @@ public class Matrix {
             throw new IllegalArgumentException("Illegal matrix dimensions!");
         }
 
-        Matrix newMatrix = new Matrix(getRows(), matrix.getColumns());
+        Matrix newMatrix = new Matrix(getRows(), matrix.getColumns(), false);
 
         for (int newRow = 0; newRow < getRows(); newRow++) {
             for (int column = 0; column < getColumns(); column++) {
@@ -156,7 +162,7 @@ public class Matrix {
     }
 
     public Matrix cofactor() {
-        Matrix newMatrix = new Matrix(getRows(), getColumns());
+        Matrix newMatrix = new Matrix(getRows(), getColumns(), false);
 
         for (int row = 0; row < getRows(); row++) {
             for (int column = 0; column < getColumns(); column++) {
@@ -169,7 +175,7 @@ public class Matrix {
     }
 
     public Matrix transpose() {
-        Matrix newMatrix = new Matrix(getColumns(), getRows());
+        Matrix newMatrix = new Matrix(getColumns(), getRows(), false);
 
         for (int row = 0; row < getRows(); row++) {
             for (int column = 0; column < getColumns(); column++) {
