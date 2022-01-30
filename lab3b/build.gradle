@@ -12,6 +12,8 @@ def packageName = 'at.ac.univie.unet.a01638800.raytracer'
 mainClassName = packageName + '.Main'
 
 jar {
+    destinationDirectory = new File("$projectDir/dist")
+
     manifest {
         attributes "Main-Class": mainClassName
     }
