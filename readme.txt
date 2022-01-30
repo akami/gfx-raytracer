@@ -41,7 +41,7 @@ to where things might have gone wrong.
 
 -- dev-computer: OS: Fedora 33 (Workstation Edition)
                 Host: 20LJS02W00 ThinkPad X380 Yoga
-                IDE: WebStorm
+                IDE: IntelliJ Ultimate
                 Browser: Firefox
 
 -- test-computer:
