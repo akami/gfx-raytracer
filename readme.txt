@@ -1,4 +1,70 @@
- ____________________________________
+# Raytracer (Foundations of Computer Graphics Project)
+This solo project was developed as part of the Foundations of Computer Graphics course at the University of Vienna (WS 2021). It is a Java‑based raytracer capable of rendering complex 3D scenes with lighting, shading, reflection, refraction, and anti‑aliasing.
+
+## What I did
+- Raytracing core
+
+ - Implemented ray–sphere and ray–triangle intersections (Möller–Trumbore algorithm)
+
+ - Added reflection and refraction with Fresnel effects
+
+ - Integrated Phong illumination model (ambient, diffuse, specular)
+
+- Scene description
+
+ - Designed XML schema (XSD) and generated parser classes with JAXB/XJC
+
+ - Allowed flexible scene configuration via XML (cameras, lights, objects, materials)
+
+- Advanced effects
+
+ - Implemented anti‑aliasing through supersampling with grid subdivision
+
+ - Added shadow rays and bias handling to avoid acne artifacts
+
+ - Refractive and tinted transmissive materials (glass‑like effects)
+
+- Challenges & limitations
+
+ - Implemented object transformations, but encountered normal transformation errors
+
+ - Performance bottlenecks due to Java and additional transformation logic (example 9 takes ~10 minutes)
+
+ - Noted differences in specular intensity and slight color tinting in transmissive objects compared to references
+
+## Key outcome
+- Built a functional raytracer from scratch in Java
+
+- Combined mathematical algorithms (intersection tests, reflection/refraction, matrix transforms) with software engineering (XML parser, scene abstraction, modular structure)
+
+- Produced a renderer capable of handling complex lighting and shading effects
+
+# Technologies used
+- Java (core raytracer implementation)
+
+- Gradle (build automation)
+
+- JAXB/XJC (XML parsing, schema‑based class generation)
+
+- Phong Shading Model (lighting & materials)
+
+- Supersampling (anti‑aliasing)
+
+## Domain & Keywords
+This project belongs to Computer Graphics, focusing on:
+
+- Raytracing – recursive ray casting, intersections, reflection/refraction
+
+- Illumination Models – Phong shading, specular highlights, ambient light
+
+- Sampling Techniques – supersampling for anti‑aliasing
+
+- Scene Representation – XML‑driven scene configuration with schema mapping
+
+- Transformations & Matrices – ray and object transformations, normals
+
+
+____________________________________
  | ------------ CLAIM ------------- |
  ------------------------------------
 
